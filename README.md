@@ -1,10 +1,12 @@
-# TAN TokenDiet v1.1.0
+# TAN TokenDiet v1.4.0
+
+<!-- mcp-name: io.github.20171806011/tan-tokendiet -->
 
 **Audit, benchmark, and safely compact MCP tool schemas & AI agent context files to cut LLM token burn and fix 5m / 1h prompt-cache misses.**
 
 - **Live Browser Analyzer (100% client-side, zero upload):** https://20171806011.github.io/tan-tokendiet/
-- **Zero-dependency Python CLI:** Python 3.9+ stdlib only — installs and runs in <1 second.
-- **Reusable GitHub Action:** `uses: 20171806011/tan-tokendiet@v1.1.0`
+- **Zero-dependency Python CLI & MCP Stdio Server:** `tokendiet` CLI + `tokendiet-mcp` (`docker run -i --rm ghcr.io/20171806011/tan-tokendiet:1.4.0`)
+- **Reusable GitHub Action:** `uses: 20171806011/tan-tokendiet@v1.4.0`
 
 ---
 

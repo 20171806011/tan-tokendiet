@@ -1,0 +1,82 @@
+name: Publish MCP Server to GHCR & Official MCP Registry
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semantic version (without leading v, e.g. 1.2.0)"
+        required: false
+        default: "1.4.0"
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run unit and MCP server tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VER="${{ inputs.version }}"
+          else
+            VER="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=${VER}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push OCI container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/20171806011/tan-tokendiet:${{ steps.ver.outputs.version }}
+            ghcr.io/20171806011/tan-tokendiet:latest
+
+      - name: Sync version in server.json
+        run: |
+          VER="${{ steps.ver.outputs.version }}"
+          jq --arg v "$VER" '.version = $v | .packages[0].identifier = ("ghcr.io/20171806011/tan-tokendiet:" + $v)' server.json > server.json.tmp
+          mv server.json.tmp server.json
+          cat server.json
+
+      - name: Install mcp-publisher CLI
+        run: |
+          curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar -xz mcp-publisher
+          chmod +x ./mcp-publisher
+          ./mcp-publisher --version
+
+      - name: Validate server.json
+        run: ./mcp-publisher validate
+
+      - name: Authenticate via GitHub OIDC and publish to Official MCP Registry
+        run: |
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
+
+      - name: Verify live MCP Registry listing
+        run: |
+          sleep 3
+          curl -sS "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.20171806011/tan-tokendiet" | jq .

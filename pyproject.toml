@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tan-tokendiet"
-version = "1.1.0"
+version = "1.4.0"
 description = "Audit, benchmark, and compact MCP tool schemas & AI agent context files to cut LLM token burn and fix prompt-cache misses."
 readme = "README.md"
 license = {text = "MIT"}
@@ -21,6 +21,7 @@ classifiers = [
 
 [project.scripts]
 tokendiet = "tokendiet.cli:main"
+tokendiet-mcp = "tokendiet.mcp_server:main"
 
 [project.urls]
 Homepage = "https://20171806011.github.io/tan-tokendiet/"
