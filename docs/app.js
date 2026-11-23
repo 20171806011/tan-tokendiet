@@ -925,40 +925,165 @@
     }
   }
 
-  /* --- Dynamic Checkout Loader (Stripe TAN Payment Link / Polar.sh) --- */
+  /* --- Dual-Rail Checkout Loader (Live Base Mainnet USDC + Stripe TAN Payment Link) --- */
+  const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+  let checkoutCfg = null;
+  let activeOrderTier = "pro"; // "pro" | "audit"
+
+  function openUsdcModal(tier) {
+    if (!checkoutCfg || !checkoutCfg.onchain_usdc) return;
+    activeOrderTier = tier;
+    const oc = checkoutCfg.onchain_usdc;
+    const isAudit = tier === "audit";
+    const amount = isAudit ? oc.audit_amount_usdc : oc.pro_amount_usdc;
+    const units = BigInt(amount) * 1000000n;
+    document.getElementById("modal-item-name").textContent = isAudit
+      ? "Done-For-You MCP & Prompt-Cache Audit (+ Pro Kit)"
+      : checkoutCfg.product_name;
+    document.getElementById("modal-item-price").textContent = `${amount}.00 USDC`;
+    document.getElementById("modal-treasury-addr").textContent = oc.treasury_address;
+    document.getElementById("modal-eip681-link").href =
+      `ethereum:${oc.token_contract}@${oc.chain_id}/transfer?address=${oc.treasury_address}&uint256=${units.toString()}`;
+    document.getElementById("modal-basescan-addr").href = `https://basescan.org/address/${oc.treasury_address}`;
+    const resBox = document.getElementById("verify-result");
+    resBox.className = "verify-result";
+    resBox.textContent = "";
+    document.getElementById("tx-hash-input").value = "";
+    document.getElementById("usdc-modal").classList.add("is-open");
+  }
+
+  async function verifyBaseUsdcTx() {
+    const resBox = document.getElementById("verify-result");
+    const txHash = document.getElementById("tx-hash-input").value.trim();
+    if (!/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+      resBox.className = "verify-result is-err";
+      resBox.textContent = "Please enter a valid 66-character Base Mainnet transaction hash (0x...).";
+      return;
+    }
+    const oc = checkoutCfg.onchain_usdc;
+    const requiredAmount = activeOrderTier === "audit" ? oc.audit_amount_usdc : oc.pro_amount_usdc;
+    const requiredUnits = BigInt(requiredAmount) * 1000000n;
+    resBox.className = "verify-result";
+    resBox.style.display = "block";
+    resBox.textContent = "Querying Base Mainnet RPC (https://mainnet.base.org)...";
+
+    try {
+      const resp = await fetch(oc.rpc_url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getTransactionReceipt", params: [txHash] }),
+      });
+      const data = await resp.json();
+      const receipt = data.result;
+      if (!receipt) {
+        resBox.className = "verify-result is-err";
+        resBox.textContent = "Transaction not found or still pending on Base Mainnet. Wait ~5 seconds and retry.";
+        return;
+      }
+      if (receipt.status !== "0x1") {
+        resBox.className = "verify-result is-err";
+        resBox.textContent = "Transaction reverted on-chain (status != 0x1).";
+        return;
+      }
+      const targetAddr = oc.treasury_address.toLowerCase().replace(/^0x/, "");
+      const usdcAddr = oc.token_contract.toLowerCase();
+      let matchedUnits = 0n;
+      for (const log of receipt.logs || []) {
+        if (
+          (log.address || "").toLowerCase() === usdcAddr &&
+          Array.isArray(log.topics) &&
+          log.topics.length >= 3 &&
+          log.topics[0].toLowerCase() === TRANSFER_TOPIC &&
+          log.topics[2].toLowerCase().endsWith(targetAddr)
+        ) {
+          matchedUnits += BigInt(log.data || "0x0");
+        }
+      }
+      if (matchedUnits < requiredUnits) {
+        const paidStr = (Number(matchedUnits) / 1e6).toFixed(2);
+        resBox.className = "verify-result is-err";
+        resBox.textContent = `Verified receipt on Base, but USDC sent to TAN Treasury was ${paidStr} USDC (required: ${requiredAmount}.00 USDC).`;
+        return;
+      }
+      const paidUsdc = (Number(matchedUnits) / 1e6).toFixed(2);
+      const claimTitle = encodeURIComponent(
+        `[PAID ON-CHAIN ${paidUsdc} USDC] ${activeOrderTier === "audit" ? "Done-For-You Audit" : "TAN TokenDiet Pro"} Fulfillment`
+      );
+      const claimBody = encodeURIComponent(
+        `Verified Base Mainnet USDC payment:\n- Amount: ${paidUsdc} USDC\n- Tx Hash: ${txHash}\n- BaseScan: https://basescan.org/tx/${txHash}\n\nPlease deliver the Pro Kit / Audit access.`
+      );
+      const claimUrl = `https://github.com/20171806011/tan-tokendiet/issues/new?title=${claimTitle}&body=${claimBody}`;
+      resBox.className = "verify-result is-ok";
+      resBox.innerHTML =
+        `<strong>Confirmed on Base Mainnet: ${paidUsdc} USDC received!</strong><br/>` +
+        `<a href="${claimUrl}" target="_blank" rel="noopener" style="font-weight:700;color:var(--accent-save);">Click here to claim instant delivery with verified Tx Hash →</a>`;
+    } catch (err) {
+      resBox.className = "verify-result is-err";
+      resBox.textContent = `RPC check failed: ${err.message || err}`;
+    }
+  }
+
   async function initCheckout() {
     const btn = document.getElementById("btn-buy-pro");
     const note = document.getElementById("checkout-status-note");
+    const auditBtn = document.getElementById("btn-buy-audit");
     try {
       const resp = await fetch("./checkout-config.json", { cache: "no-store" });
       const cfg = await resp.json();
+      checkoutCfg = cfg;
       document.getElementById("pro-price-display").textContent = `£${cfg.price_gbp}`;
-      document.getElementById("pro-price-sub").textContent = `GBP ($${cfg.price_usd} USD) · one-time · v1.x lifetime updates`;
+      document.getElementById("pro-price-sub").textContent = `GBP ($${cfg.price_usd} USDC) · one-time · v1.x`;
 
-      if (cfg.status === "live" && cfg.checkout_url) {
+      if (cfg.checkout_url) {
         btn.href = cfg.checkout_url;
         btn.target = "_blank";
         btn.rel = "noopener";
-        btn.textContent = `Buy TokenDiet Pro — £${cfg.price_gbp} (Instant Download)`;
-        note.textContent = "Secure checkout via Stripe. Instant digital delivery + 14-day refund guarantee.";
-      } else if (cfg.polar_fallback_url) {
-        btn.href = cfg.polar_fallback_url;
-        btn.target = "_blank";
-        btn.rel = "noopener";
-        btn.textContent = `Buy TokenDiet Pro — $${cfg.price_usd} via Polar`;
-        note.textContent = "Global VAT handled automatically by Polar (Merchant of Record).";
+        btn.textContent = `Buy TokenDiet Pro — £${cfg.price_gbp} (Card / Apple Pay)`;
+        note.innerHTML = `Instant Stripe Checkout · or <a href="#pricing" id="inline-usdc-pro">pay $${cfg.price_usd} USDC on Base</a>.`;
+        document.getElementById("inline-usdc-pro")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          openUsdcModal("pro");
+        });
+      } else if (cfg.onchain_usdc && cfg.onchain_usdc.enabled) {
+        btn.href = "#pricing";
+        btn.textContent = `Buy TokenDiet Pro — $${cfg.onchain_usdc.pro_amount_usdc} USDC (Base · Live)`;
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          openUsdcModal("pro");
+        });
+        note.innerHTML = `Live 24/7 on-chain Base USDC checkout (2s finality, &lt;$0.01 fee) · <a href="${cfg.preorder_url}" target="_blank" rel="noopener">Card/Stripe waitlist</a>.`;
       } else {
         btn.href = cfg.preorder_url || "https://github.com/20171806011/tan-tokendiet/issues";
         btn.target = "_blank";
         btn.rel = "noopener";
-        btn.textContent = `Reserve Pro License (£${cfg.price_gbp} Launch Price)`;
-        note.textContent = "Stripe live checkout activation is in progress — click to reserve the £15 launch license via GitHub and receive the live payment link first.";
+        btn.textContent = `Reserve Pro License (£${cfg.price_gbp})`;
+        note.textContent = "Click to request license via GitHub.";
+      }
+
+      if (auditBtn && cfg.onchain_usdc && cfg.onchain_usdc.enabled) {
+        auditBtn.addEventListener("click", () => openUsdcModal("audit"));
       }
     } catch {
       btn.href = "https://github.com/20171806011/tan-tokendiet/issues";
-      btn.textContent = "Request Pro License — £15";
+      btn.textContent = "Buy TokenDiet Pro — £15 / $19";
     }
   }
+
+  document.getElementById("btn-close-modal")?.addEventListener("click", () => {
+    document.getElementById("usdc-modal").classList.remove("is-open");
+  });
+  document.getElementById("usdc-modal")?.addEventListener("click", (ev) => {
+    if (ev.target.id === "usdc-modal") ev.target.classList.remove("is-open");
+  });
+  document.getElementById("btn-copy-treasury")?.addEventListener("click", async (ev) => {
+    const addr = document.getElementById("modal-treasury-addr").textContent;
+    try {
+      await navigator.clipboard.writeText(addr);
+      ev.target.textContent = "Copied";
+      setTimeout(() => (ev.target.textContent = "Copy"), 1500);
+    } catch {}
+  });
+  document.getElementById("btn-verify-tx")?.addEventListener("click", verifyBaseUsdcTx);
 
   /* --- Event Listeners --- */
   function setSample(key, btnId) {

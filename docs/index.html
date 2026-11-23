@@ -277,7 +277,10 @@
                 <li>24-hour turnaround · 14-day refund guarantee</li>
               </ul>
             </div>
-            <a href="https://github.com/20171806011/tan-tokendiet/issues/new?template=custom-mcp-audit.md" target="_blank" rel="noopener" class="btn">Request £29 Audit</a>
+            <div>
+              <button type="button" id="btn-buy-audit" class="btn" style="width: 100%; padding: 11px 16px;">Order Audit — $39 USDC (Base)</button>
+              <p class="checkout-status-note">Instant on-chain checkout or <a href="https://github.com/20171806011/tan-tokendiet/issues/new?template=custom-mcp-audit.md" target="_blank" rel="noopener">request invoice via GitHub</a>.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -294,28 +297,28 @@
           <article class="policy-block">
             <h3>Digital Fulfillment &amp; Delivery Policy</h3>
             <p>
-              TAN TokenDiet Pro is delivered electronically as a downloadable software archive (<code>tan-tokendiet-pro-v1.x.zip</code>) containing the GitHub Actions workflow templates, Python batch auditor scripts, compaction presets, and commercial license file. Upon completed payment via Stripe Checkout, access is granted immediately via the confirmation link and email receipt. No physical goods are shipped.
+              TAN TokenDiet Pro is delivered electronically as a downloadable software archive (<code>tan-tokendiet-pro-v1.x.zip</code>) containing the GitHub Actions workflow templates, Python batch auditor scripts, compaction presets, and commercial license file. Payments are accepted live 24/7 via <strong>Native USDC on Base Mainnet</strong> (verified directly on-chain in your browser via Base RPC) and via Stripe Checkout once card rails are enabled. No physical goods are shipped.
             </p>
           </article>
 
           <article class="policy-block">
             <h3>14-Day Refund Policy</h3>
             <p>
-              If TAN TokenDiet Pro does not save your team time or reduce token overhead as expected, request a full refund within 14 calendar days of purchase by opening a support request or replying to your Stripe payment receipt with your order ID. Approved refunds are returned to the original payment method within 5–10 business days.
+              If TAN TokenDiet Pro or a Done-For-You Audit does not save your team time or reduce token overhead as expected, request a full refund within 14 calendar days of purchase by opening a support issue with your Base transaction hash or Stripe receipt ID. Verified refunds are returned to the originating wallet or payment method within 5 business days.
             </p>
           </article>
 
           <article class="policy-block">
             <h3>Privacy &amp; Data Handling</h3>
             <p>
-              The TokenDiet browser analyzer runs 100% locally in your browser using vanilla JavaScript. No schemas, system prompts, or files pasted into the workbench are transmitted to any external server. Payment processing for Pro licenses is handled directly by Stripe (PCI-DSS Level 1 certified); TAN DevTools never stores credit card numbers.
+              The TokenDiet browser analyzer runs 100% locally in your browser using vanilla JavaScript. No schemas, system prompts, or files pasted into the workbench are transmitted to any external server. On-chain transaction verification queries only public Base Mainnet RPC nodes directly from your browser; TAN DevTools never stores private keys or credit card numbers.
             </p>
           </article>
 
           <article class="policy-block">
             <h3>Commercial License &amp; Support Contact</h3>
             <p>
-              Operated by <strong>TAN DevTools</strong> (United Kingdom). Pro licenses grant a perpetual, non-exclusive commercial license for internal use across your organization's repositories for all v1.x releases. Technical support, billing inquiries, and refund requests are handled via <a href="https://github.com/20171806011/tan-tokendiet/issues" target="_blank" rel="noopener">GitHub Issues</a> with a target response time of 2 business days.
+              Operated by <strong>TAN DevTools</strong> (United Kingdom). Pro licenses grant a perpetual, non-exclusive commercial license for internal use across your organization's repositories for all v1.x releases. Technical support, on-chain fulfillment claims, and refund requests are handled via <a href="https://github.com/20171806011/tan-tokendiet/issues" target="_blank" rel="noopener">GitHub Issues</a>.
             </p>
           </article>
         </div>
@@ -323,9 +326,54 @@
     </section>
   </main>
 
+  <div class="modal-backdrop" id="usdc-modal" role="dialog" aria-modal="true" aria-labelledby="usdc-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="usdc-modal-title">Instant On-Chain Checkout (USDC · Base Mainnet)</h3>
+        <button type="button" class="btn btn-ghost" id="btn-close-modal" aria-label="Close modal">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="pay-summary">
+          <div>
+            <strong id="modal-item-name">TAN TokenDiet Pro — v1.x Team License</strong>
+            <div class="modal-meta">Network: Base Mainnet (Chain ID 8453) · Native USDC</div>
+          </div>
+          <div class="pay-amount" id="modal-item-price">19.00 USDC</div>
+        </div>
+
+        <div>
+          <label class="modal-meta" style="display:block;margin-bottom:5px;font-weight:600;color:var(--ink-secondary);">1. Send exact Native USDC on Base to TAN Treasury:</label>
+          <div class="addr-box">
+            <code id="modal-treasury-addr">0x63cee161084df40f527EFBFDE3e7bC242F4b32FD</code>
+            <button type="button" class="btn" id="btn-copy-treasury">Copy</button>
+          </div>
+          <p class="modal-meta" style="margin-top:6px;">
+            USDC Contract: <code>0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913</code> ·
+            <a id="modal-eip681-link" href="#">Open in Wallet (EIP-681)</a> ·
+            <a id="modal-basescan-addr" href="https://basescan.org/address/0x63cee161084df40f527EFBFDE3e7bC242F4b32FD" target="_blank" rel="noopener">Verify on BaseScan</a>
+          </p>
+        </div>
+
+        <div>
+          <label class="modal-meta" for="tx-hash-input" style="display:block;margin-bottom:5px;font-weight:600;color:var(--ink-secondary);">2. Paste Base Transaction Hash for instant RPC verification:</label>
+          <div class="verify-row">
+            <input type="text" id="tx-hash-input" class="verify-input" placeholder="0x... (66-char Base tx hash)" spellcheck="false" />
+            <button type="button" class="btn btn-save" id="btn-verify-tx">Verify Tx</button>
+          </div>
+        </div>
+
+        <div id="verify-result" class="verify-result"></div>
+
+        <p class="modal-meta" id="modal-fiat-fallback">
+          Prefer fiat card checkout (GBP/USD via Stripe)? <a href="https://github.com/20171806011/tan-tokendiet/issues/new?template=pro-license-request.md" target="_blank" rel="noopener">Reserve via GitHub</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+
   <footer class="site-footer">
     <div class="container footer-inner">
-      <span>© 2026 TAN DevTools · TAN TokenDiet v1.0.0</span>
+      <span>© 2026 TAN DevTools · TAN TokenDiet v1.2.0</span>
       <span>Core CLI licensed under MIT · Browser tool executes 100% client-side</span>
     </div>
   </footer>

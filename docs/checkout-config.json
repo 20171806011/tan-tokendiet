@@ -3,12 +3,28 @@
   "product_name": "TAN TokenDiet Pro — Commercial & CI License (v1.x)",
   "price_gbp": 15,
   "price_usd": 19,
+  "audit_price_gbp": 29,
+  "audit_price_usd": 39,
   "billing_type": "one_time",
-  "status": "awaiting_stripe_activation",
-  "checkout_provider": "stripe_payment_link",
+  "status": "live_onchain_usdc",
+  "onchain_usdc": {
+    "enabled": true,
+    "network": "Base Mainnet",
+    "chain_id": 8453,
+    "rpc_url": "https://mainnet.base.org",
+    "explorer_tx_prefix": "https://basescan.org/tx/",
+    "token_symbol": "USDC",
+    "token_contract": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "decimals": 6,
+    "treasury_address": "0x63cee161084df40f527EFBFDE3e7bC242F4b32FD",
+    "pro_amount_usdc": 19,
+    "audit_amount_usdc": 39
+  },
+  "checkout_provider": "base_usdc_and_stripe",
   "checkout_url": "",
   "polar_fallback_url": "",
-  "preorder_url": "https://github.com/20171806011/tan-tokendiet/issues/new?title=Pro+License+Request+(TAN+TokenDiet+Pro)&body=Hi+TAN+DevTools%2C%0A%0AI+would+like+to+purchase+a+TAN+TokenDiet+Pro+license+(%C2%A315+%2F+%2419+one-time).%0A%0ATeam+size%3A+%0APreferred+currency+(GBP%2FUSD)%3A+GBP%0A%0APlease+reply+once+the+Stripe+checkout+link+is+live!",
+  "preorder_url": "https://github.com/20171806011/tan-tokendiet/issues/new?template=pro-license-request.md",
+  "audit_request_url": "https://github.com/20171806011/tan-tokendiet/issues/new?template=custom-mcp-audit.md",
   "support_url": "https://github.com/20171806011/tan-tokendiet/issues",
-  "activation_instructions": "Paste your live Stripe Payment Link (https://buy.stripe.com/...) into checkout_url and change status to 'live'."
+  "activation_instructions": "On-chain Base USDC checkout is LIVE today. To also enable fiat card payments, paste a live Stripe Payment Link into checkout_url."
 }
