@@ -1,79 +1,67 @@
-# TAN TokenDiet
+# TAN TokenDiet v1.1.0
 
-**Audit, benchmark, and safely compact MCP tool schemas & AI agent context files to cut LLM token burn and fix prompt-cache misses.**
+**Audit, benchmark, and safely compact MCP tool schemas & AI agent context files to cut LLM token burn and fix 5m / 1h prompt-cache misses.**
 
 - **Live Browser Analyzer (100% client-side, zero upload):** https://20171806011.github.io/tan-tokendiet/
-- **Zero-dependency Python CLI:** works on Python 3.9+ with zero third-party packages.
+- **Zero-dependency Python CLI:** Python 3.9+ stdlib only — installs and runs in <1 second.
+- **Reusable GitHub Action:** `uses: 20171806011/tan-tokendiet@v1.1.0`
 
 ---
 
-## Why TokenDiet?
+## Verified Empirical Benchmarks (`modelcontextprotocol/servers`, 44 Tools)
 
-Connecting 5–15 MCP servers (`mcp.json`, `tools/list`) alongside `AGENTS.md`, `CLAUDE.md`, `SKILL.md`, and `.cursorrules` quietly injects **5,000–40,000 static tokens into every single agent turn**:
+Measured directly against upstream official MCP reference servers ([full methodology](benchmarks/RESULTS.md)):
 
-1. **Pydantic / Zod Schema Overhead:** redundant `$schema`, `additionalProperties: false`, empty `required: []`, and auto-generated `title` annotations duplicating every field name.
-2. **Inline Code Examples & Boilerplate:** multi-paragraph tool descriptions and repeated policy text re-sent hundreds of times per day.
-3. **Broken KV Prompt Caches:** ISO timestamps, `{{now}}` / `{{uuid}}` templates, or unsorted tool/property keys silently bust Anthropic/OpenAI/Gemini prefix caching — costing 4x–10x more per input token.
+| Official MCP Server | Tools | Raw Tok/Turn | Safe Lossless | Aggressive | Structural Invariants |
+|---|---:|---:|---:|---:|:---:|
+| `mcp-server-filesystem` | 16 | 2,133 | 1,581 (**-25.9%**) | 931 (**-56.4%**) | ✅ 100% |
+| `mcp-server-git` | 14 | 1,805 | 1,170 (**-35.2%**) | 1,170 (**-35.2%**) | ✅ 100% |
+| `mcp-server-memory` | 9 | 1,014 | 704 (**-30.6%**) | 411 (**-59.5%**) | ✅ 100% |
+| `mcp-server-time` | 3 | 354 | 213 (**-39.8%**) | 213 (**-39.8%**) | ✅ 100% |
+| `mcp-server-fetch` | 1 | 257 | 189 (**-26.5%**) | 189 (**-26.5%**) | ✅ 100% |
+| `mcp-server-sequentialthinking` | 1 | 294 | 234 (**-20.4%**) | 66 (**-77.6%**) | ✅ 100% |
+| **Combined 6-Server Stack** | **44** | **5,840** | **4,074 (-30.2%)** | **2,962 (-49.3%)** | **✅ All 44 Passed** |
 
-On a real 4-tool sample schema (`examples/bloated_mcp_tools.json`), `tokendiet minify --aggressive` cuts token overhead by **41.3%** (`884 → 519 tokens`) while **verifying 100% JSON Schema structural invariants** and fixing KV prompt-cache safety (`NO → YES`).
+> **Why Prompt-Cache Safety Matters More Than Raw Token Count:** Recent coding agents (e.g. Claude Code) write 1-hour TTL prompt caches billed at **2.0× input** (vs 1.25× for 5-minute TTL). A single dynamic timestamp, UUID, or non-deterministic tool order silently turns a 90% cached-read discount into repeated 2.0× cache writes. TokenDiet flags all cache-busters (`TD005` / `TD006`) and enforces deterministic JSON sorting.
 
 ---
 
-## Quick Start (CLI)
+## Quick Start (CLI & GitHub Action)
 
+### CLI
 ```bash
 pip install git+https://github.com/20171806011/tan-tokendiet.git
+
+# Audit an MCP schema JSON, mcp.json, AGENTS.md, or an entire repository
+tokendiet audit examples/bloated_mcp_tools.json --model claude-sonnet --turns-per-day 200 --team-size 5
+
+# Safely compact tool schemas with 100% JSON Schema structural invariant verification
+tokendiet minify examples/bloated_mcp_tools.json --aggressive -o tools.compact.json
+
+# CI regression diff gate
+tokendiet diff tools.compact.json examples/bloated_mcp_tools.json --max-delta 200
 ```
 
-Or run directly from source without installing:
-
-```bash
-# Audit an MCP tools/list JSON, mcp.json, AGENTS.md, or an entire repository
-python3 -m tokendiet audit examples/bloated_mcp_tools.json --model claude-sonnet --turns-per-day 200 --team-size 5
-
-# Safely compact an MCP / OpenAI / Anthropic tool schema with structural invariant verification
-python3 -m tokendiet minify examples/bloated_mcp_tools.json --aggressive -o tools.compact.json
-
-# CI regression gate: fail build if a PR adds >200 tokens to tool/agent context
-python3 -m tokendiet diff tools.compact.json examples/bloated_mcp_tools.json --max-delta 200
+### Reusable GitHub Action
+```yaml
+- uses: 20171806011/tan-tokendiet@v1.1.0
+  with:
+    path: "."
+    model: "claude-sonnet"
+    max-tokens: "4000"
+    fail-on-cache-buster: "true"
 ```
-
-## 12 Diagnostic Rules
-
-| Rule | Severity | What It Detects |
-|---|---|---|
-| `TD001` | Warning / Critical | Oversized tool description (`>120` tokens) |
-| `TD002` | Warning | Oversized parameter description (`>50` tokens) |
-| `TD003` | Info | Redundant `$schema`, `additionalProperties: false`, empty `required: []`, duplicate Pydantic/Zod `title` |
-| `TD004` | Warning / Critical | Excessive per-turn static context (`>4,000` / `>12,000` tokens) or `8+` always-on MCP servers |
-| `TD005` | Critical | Prompt-cache-busting timestamps, `{{now}}`, `Date.now()`, or UUID literals in static prefix |
-| `TD006` | Info / Warning | Unsorted tools array or property keys causing non-deterministic KV prefix misses |
-| `TD007` | Warning | Repeated boilerplate sentences across `>=3` tools or duplicated instruction lines |
-| `TD008` | Info / Warning | Fenced code blocks or inline examples embedded inside always-loaded descriptions |
-| `TD009` | Warning | Deeply nested inline JSON schema (`depth >= 5`) |
-| `TD010` | Warning | Large inline `enum` list (`>=15` values) re-sent every turn |
-| `TD011` | Critical | Duplicate tool names registered across servers |
-| `TD012` | Info | Excessive whitespace padding in agent instruction files |
 
 ---
 
-## TAN TokenDiet Pro (£15 GBP / $19 USD — One-Time Team License)
+## Commercial Editions (Zero Subscriptions)
 
-The core CLI and browser analyzer are open-source (MIT). For engineering teams automating context governance in CI/CD, **TAN TokenDiet Pro** adds:
+- **TAN TokenDiet Free (£0 · MIT):** Core CLI, 100% client-side browser analyzer, reusable GitHub Action, 12 rules.
+- **TAN TokenDiet Pro Kit (£15 GBP / $19 USD · one-time):** Automated GitHub PR Cost-Delta Commenter & Budget Gate, Multi-Repo FinOps Batch Auditor (HTML Executive Report + CSV), curated MCP server profile presets, perpetual commercial v1.x team license.
+- **Done-For-You MCP & Prompt-Cache Audit (£29 GBP / $39 USD · fixed fee, 24h):** Hands-on audit of your repo/MCP stack, drop-in compacted schemas + cache-fix PR, Executive FinOps report, **includes TokenDiet Pro Kit**.
 
-- **GitHub Actions PR Token Budget Gate** (automated PR comments with exact token & monthly USD/GBP delta + CI failure thresholds)
-- **Multi-Repo FinOps Batch Auditor** (standalone HTML Executive Report + CSV export across an org's repos)
-- **Curated MCP Compaction Presets** (GitHub, PostgreSQL, Playwright, Linear, Slack stacks)
-- **Perpetual Commercial v1.x License** with 14-day refund guarantee
-
-See details & licensing at: https://20171806011.github.io/tan-tokendiet/#pricing
-
-## Running Tests
-
-```bash
-python3 -m unittest discover -s tests -v
-```
+Details, live interactive calculator & policies: https://20171806011.github.io/tan-tokendiet/
 
 ## License
 
-Core CLI & browser analyzer: [MIT License](LICENSE).
+Core CLI, Action & browser analyzer: [MIT License](LICENSE).

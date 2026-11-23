@@ -1,0 +1,51 @@
+name: "TAN TokenDiet — MCP & Agent Context Audit"
+description: "Audit MCP tool schemas, mcp.json, and AGENTS.md / CLAUDE.md files in CI to stop token bloat and prompt-cache regressions."
+author: "TAN DevTools"
+branding:
+  icon: "activity"
+  color: "green"
+
+inputs:
+  path:
+    description: "File or directory path to audit"
+    required: false
+    default: "."
+  model:
+    description: "Model pricing profile (claude-sonnet, claude-opus, gpt-5, gemini-2.5-pro, gpt-4.1-mini, gemini-2.5-flash)"
+    required: false
+    default: "claude-sonnet"
+  turns-per-day:
+    description: "Estimated agent turns per developer per day"
+    required: false
+    default: "200"
+  team-size:
+    description: "Number of developers"
+    required: false
+    default: "5"
+  max-tokens:
+    description: "Optional max static token budget (fails build if exceeded)"
+    required: false
+    default: ""
+  fail-on-cache-buster:
+    description: "Fail build if dynamic prompt-cache-busting timestamps/UUIDs are detected"
+    required: false
+    default: "true"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Run TAN TokenDiet Audit
+      shell: bash
+      run: |
+        ARGS=("audit" "${{ inputs.path }}" "--model" "${{ inputs.model }}" "--turns-per-day" "${{ inputs.turns-per-day }}" "--team-size" "${{ inputs.team-size }}")
+        if [ -n "${{ inputs.max-tokens }}" ]; then
+          ARGS+=("--max-tokens" "${{ inputs.max-tokens }}")
+        fi
+        if [ "${{ inputs.fail-on-cache-buster }}" = "true" ]; then
+          ARGS+=("--fail-on-cache-buster")
+        fi
+        PYTHONPATH="${{ github.action_path }}" python3 -m tokendiet "${ARGS[@]}"

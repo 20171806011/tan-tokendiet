@@ -717,8 +717,56 @@ h2 {
 
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.bench-table-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.bench-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.bench-table th,
+.bench-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-hairline);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.bench-table th {
+  background: var(--bg-subtle);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-secondary);
+}
+
+.bench-table td.num,
+.bench-table th.num {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+.bench-table tr.bench-total td {
+  background: #fbfaf7;
+  font-weight: 700;
+  border-bottom: none;
+}
+
+.bench-save {
+  color: var(--accent-save);
+  font-weight: 700;
 }
 
 .plan-card {

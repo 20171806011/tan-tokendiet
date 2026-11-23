@@ -19,8 +19,9 @@
       </a>
       <nav class="nav-links" aria-label="Primary navigation">
         <a href="#analyzer">Analyzer</a>
-        <a href="#pricing">Pro License</a>
-        <a href="#policies">Policies &amp; Terms</a>
+        <a href="#benchmarks">Benchmarks</a>
+        <a href="#pricing">Pro &amp; Audit</a>
+        <a href="#policies">Policies</a>
         <a href="https://github.com/20171806011/tan-tokendiet" target="_blank" rel="noopener">GitHub CLI</a>
         <a href="#pricing" class="nav-cta">Get Pro — £15</a>
       </nav>
@@ -31,11 +32,11 @@
     <section class="hero">
       <div class="container hero-grid">
         <div>
-          <p class="eyebrow">MCP &amp; AI Agent FinOps Diagnostic</p>
+          <p class="eyebrow">MCP &amp; AI Agent FinOps Diagnostic · v1.1</p>
           <h1>Stop paying a silent token tax on every agent turn.</h1>
           <p class="hero-lead">
             Paste any MCP <code>tools/list</code> schema, <code>mcp.json</code>, or <code>AGENTS.md</code> / <code>CLAUDE.md</code> file.
-            TokenDiet audits 12 bloat &amp; prompt-cache-busting rules, models exact monthly API burn, and compacts JSON schemas while verifying 100% structural integrity.
+            TokenDiet audits 12 bloat &amp; prompt-cache-busting rules, models exact 5m / 1h cache-write penalties, and compacts JSON schemas while verifying 100% structural integrity.
           </p>
         </div>
         <div class="hero-meta">
@@ -88,8 +89,12 @@
               <input type="range" id="team-slider" min="1" max="50" step="1" value="5" />
             </div>
             <div class="control-field">
-              <label for="cache-slider"><span>Expected Cache Hit</span><span class="control-val" id="cache-val">0%</span></label>
-              <input type="range" id="cache-slider" min="0" max="95" step="5" value="0" />
+              <label for="cache-ttl-select"><span>Cache Write Mode</span><span class="control-val" id="cache-val">80% hit</span></label>
+              <select id="cache-ttl-select">
+                <option value="1h" selected>1h TTL Write (2.0× Claude Code miss)</option>
+                <option value="5m">5m TTL Write (1.25× miss)</option>
+                <option value="none">Standard Uncached (1.0× miss)</option>
+              </select>
             </div>
           </div>
 
@@ -168,13 +173,49 @@
       </div>
     </section>
 
+    <section class="section" id="benchmarks">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Verified Empirical Data · Nov 2026</p>
+          <h2>Measured across all 6 official MCP reference servers (44 tools).</h2>
+          <p class="section-sub">
+            Audited directly against upstream <code>modelcontextprotocol/servers</code>. Lossless schema stripping alone removes 30.2% of per-turn tokens with zero change to tool names, types, required params, or enums.
+          </p>
+        </div>
+        <div class="bench-table-wrap">
+          <table class="bench-table">
+            <thead>
+              <tr>
+                <th>Official MCP Server</th>
+                <th class="num">Tools</th>
+                <th class="num">Raw Tok/Turn</th>
+                <th class="num">Safe Lossless</th>
+                <th class="num">Aggressive</th>
+                <th class="num">Findings</th>
+                <th>Invariants</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>mcp-server-filesystem</code></td><td class="num">16</td><td class="num">2,133</td><td class="num">1,581 <span class="bench-save">(-25.9%)</span></td><td class="num">931 <span class="bench-save">(-56.4%)</span></td><td class="num">51</td><td><span class="badge badge-save">100% Verified</span></td></tr>
+              <tr><td><code>mcp-server-git</code></td><td class="num">14</td><td class="num">1,805</td><td class="num">1,170 <span class="bench-save">(-35.2%)</span></td><td class="num">1,170 <span class="bench-save">(-35.2%)</span></td><td class="num">66</td><td><span class="badge badge-save">100% Verified</span></td></tr>
+              <tr><td><code>mcp-server-memory</code></td><td class="num">9</td><td class="num">1,014</td><td class="num">704 <span class="bench-save">(-30.6%)</span></td><td class="num">411 <span class="bench-save">(-59.5%)</span></td><td class="num">28</td><td><span class="badge badge-save">100% Verified</span></td></tr>
+              <tr><td><code>mcp-server-time</code></td><td class="num">3</td><td class="num">354</td><td class="num">213 <span class="bench-save">(-39.8%)</span></td><td class="num">213 <span class="bench-save">(-39.8%)</span></td><td class="num">17</td><td><span class="badge badge-save">100% Verified</span></td></tr>
+              <tr><td><code>mcp-server-fetch</code></td><td class="num">1</td><td class="num">257</td><td class="num">189 <span class="bench-save">(-26.5%)</span></td><td class="num">189 <span class="bench-save">(-26.5%)</span></td><td class="num">8</td><td><span class="badge badge-save">100% Verified</span></td></tr>
+              <tr><td><code>mcp-server-sequentialthinking</code></td><td class="num">1</td><td class="num">294</td><td class="num">234 <span class="bench-save">(-20.4%)</span></td><td class="num">66 <span class="bench-save">(-77.6%)</span></td><td class="num">4</td><td><span class="badge badge-save">100% Verified</span></td></tr>
+              <tr class="bench-total"><td>Combined 6-Server Reference Stack</td><td class="num">44</td><td class="num">5,840</td><td class="num">4,074 <span class="bench-save">(-30.2%)</span></td><td class="num">2,962 <span class="bench-save">(-49.3%)</span></td><td class="num">172</td><td><span class="badge badge-save">All 44 Passed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="pricing">
       <div class="container">
         <div class="section-head">
           <p class="eyebrow">Transparent Pricing · Zero Subscriptions</p>
-          <h2>Free for solo audits. One-time Pro Pack for CI enforcement &amp; teams.</h2>
+          <h2>Free core CLI. One-time Pro Pack or fixed-fee audit for teams.</h2>
           <p class="section-sub">
-            The core CLI and browser analyzer are open-source (MIT). Upgrade once to stop token regressions from sneaking into production PRs across your repositories.
+            The core CLI, reusable GitHub Action, and browser analyzer are open-source (MIT). Upgrade once to enforce token budgets on every PR or get a 24-hour done-for-you MCP diet PR.
           </p>
         </div>
 
@@ -185,13 +226,13 @@
               <h3 class="plan-title">TokenDiet Free</h3>
               <div class="plan-price">
                 <span class="price-main">£0</span>
-                <span class="price-note">forever · no account required</span>
+                <span class="price-note">forever · no account</span>
               </div>
               <ul class="plan-list">
                 <li>100% client-side web analyzer &amp; safe schema minifier</li>
                 <li>Zero-dependency Python CLI (<code>audit</code>, <code>minify</code>, <code>diff</code>)</li>
-                <li>All 12 static bloat &amp; prompt-cache-buster detectors</li>
-                <li>6-model monthly cost calculator (USD &amp; GBP)</li>
+                <li>Reusable basic GitHub Action (<code>20171806011/tan-tokendiet@v1.1.0</code>)</li>
+                <li>All 12 static bloat &amp; 5m/1h prompt-cache detectors</li>
                 <li>Markdown audit report export</li>
               </ul>
             </div>
@@ -200,17 +241,17 @@
 
           <div class="plan-card is-featured">
             <div>
-              <div class="plan-kicker">Commercial &amp; Team Automation Kit</div>
+              <div class="plan-kicker">Commercial &amp; Team CI Kit</div>
               <h3 class="plan-title">TAN TokenDiet Pro</h3>
               <div class="plan-price">
                 <span class="price-main" id="pro-price-display">£15</span>
-                <span class="price-note" id="pro-price-sub">GBP ($19 USD) · one-time · v1.x lifetime updates</span>
+                <span class="price-note" id="pro-price-sub">GBP ($19 USD) · one-time · v1.x</span>
               </div>
               <ul class="plan-list">
-                <li><strong>GitHub Actions PR Token Budget Gate</strong> — auto-comments exact token &amp; monthly cost delta on every PR and fails builds over budget</li>
-                <li><strong>Multi-Repo FinOps Batch Auditor</strong> — scans entire orgs and exports a standalone interactive HTML Executive Report + CSV</li>
-                <li><strong>Curated MCP Compaction Presets</strong> — battle-tested configs for GitHub, Postgres, Playwright, Linear &amp; Slack MCP stacks</li>
-                <li><strong>Commercial Team License</strong> — unlimited private repos &amp; CI runners across your organization</li>
+                <li><strong>PR Token Budget Gate &amp; Auto-Commenter</strong> — posts exact token &amp; monthly cost delta table on every PR and blocks regressions</li>
+                <li><strong>Multi-Repo FinOps Batch Auditor</strong> — generates standalone interactive HTML Executive Report + CSV across your org</li>
+                <li><strong>Curated MCP Profile Presets</strong> — GitHub, Postgres, Playwright, Linear &amp; Slack server profiles</li>
+                <li><strong>Commercial Team License</strong> — unlimited private repos &amp; CI runners</li>
                 <li>14-day no-questions-asked full refund guarantee</li>
               </ul>
             </div>
@@ -218,6 +259,25 @@
               <a href="#pricing" id="btn-buy-pro" class="btn btn-primary" style="width: 100%; padding: 11px 16px;">Loading checkout…</a>
               <p class="checkout-status-note" id="checkout-status-note"></p>
             </div>
+          </div>
+
+          <div class="plan-card">
+            <div>
+              <div class="plan-kicker">Productized Engineering Service</div>
+              <h3 class="plan-title">Done-For-You Audit</h3>
+              <div class="plan-price">
+                <span class="price-main">£29</span>
+                <span class="price-note">GBP ($39 USD) · fixed fee</span>
+              </div>
+              <ul class="plan-list">
+                <li>Full manual + automated audit of your MCP stack &amp; <code>AGENTS.md</code> / <code>CLAUDE.md</code></li>
+                <li>Compacted drop-in JSON schemas &amp; deterministic cache-safe patch PR</li>
+                <li>Executive FinOps PDF/HTML cost-reduction report (5m &amp; 1h TTL)</li>
+                <li><strong>Includes TAN TokenDiet Pro Kit (£15 value)</strong></li>
+                <li>24-hour turnaround · 14-day refund guarantee</li>
+              </ul>
+            </div>
+            <a href="https://github.com/20171806011/tan-tokendiet/issues/new?template=custom-mcp-audit.md" target="_blank" rel="noopener" class="btn">Request £29 Audit</a>
           </div>
         </div>
       </div>

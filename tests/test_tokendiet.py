@@ -40,6 +40,14 @@ class TestPricing(unittest.TestCase):
         self.assertGreater(with_cache["cache_savings_usd"], 0)
         self.assertGreater(no_cache["effective_monthly_gbp"], 0)
 
+    def test_anthropic_5m_vs_1h_cache_write_penalty(self) -> None:
+        std = estimate_monthly_cost(10_000, turns_per_day=100, team_size=1, model_id="claude-sonnet", cache_hit_rate=0.0, cache_write_ttl="none")
+        w5m = estimate_monthly_cost(10_000, turns_per_day=100, team_size=1, model_id="claude-sonnet", cache_hit_rate=0.0, cache_write_ttl="5m")
+        w1h = estimate_monthly_cost(10_000, turns_per_day=100, team_size=1, model_id="claude-sonnet", cache_hit_rate=0.0, cache_write_ttl="1h")
+        self.assertAlmostEqual(w5m["effective_monthly_usd"], std["effective_monthly_usd"] * 1.25, places=2)
+        self.assertAlmostEqual(w1h["effective_monthly_usd"], std["effective_monthly_usd"] * 2.0, places=2)
+        self.assertEqual(w1h["cache_write_multiplier"], 2.0)
+
 
 class TestAnalyzerAndMinifier(unittest.TestCase):
     def test_example_mcp_detects_key_antipatterns(self) -> None:

@@ -4,12 +4,12 @@
 
   const USD_TO_GBP = 0.79;
   const MODELS = {
-    "claude-sonnet": { name: "Claude Sonnet 4.x", input: 3.0, cached: 0.3 },
-    "claude-opus": { name: "Claude Opus 4.x", input: 15.0, cached: 1.5 },
-    "gpt-5": { name: "GPT-5 Flagship", input: 2.5, cached: 0.25 },
-    "gemini-2.5-pro": { name: "Gemini 2.5 Pro", input: 1.25, cached: 0.31 },
-    "gpt-4.1-mini": { name: "GPT-4.1 Mini", input: 0.4, cached: 0.1 },
-    "gemini-2.5-flash": { name: "Gemini 2.5 Flash", input: 0.3, cached: 0.075 },
+    "claude-sonnet": { name: "Claude Sonnet 4.x", input: 3.0, cached: 0.3, w5m: 1.25, w1h: 2.0 },
+    "claude-opus": { name: "Claude Opus 4.x", input: 15.0, cached: 1.5, w5m: 1.25, w1h: 2.0 },
+    "gpt-5": { name: "GPT-5 Flagship", input: 2.5, cached: 0.25, w5m: 1.0, w1h: 1.0 },
+    "gemini-2.5-pro": { name: "Gemini 2.5 Pro", input: 1.25, cached: 0.31, w5m: 1.0, w1h: 1.0 },
+    "gpt-4.1-mini": { name: "GPT-4.1 Mini", input: 0.4, cached: 0.1, w5m: 1.0, w1h: 1.0 },
+    "gemini-2.5-flash": { name: "Gemini 2.5 Flash", input: 0.3, cached: 0.075, w5m: 1.0, w1h: 1.0 },
   };
 
   const SAMPLES = {
@@ -789,11 +789,12 @@
     };
   }
 
-  function calcMonthlyCost(tokens, modelId, turnsPerDay, teamSize, cacheRatePct) {
+  function calcMonthlyCost(tokens, modelId, turnsPerDay, teamSize, cacheRatePct, cacheTtl) {
     const m = MODELS[modelId] || MODELS["claude-sonnet"];
     const hit = cacheRatePct / 100;
     const monthlyTokens = tokens * turnsPerDay * teamSize * 30;
-    const rate = (1 - hit) * m.input + hit * m.cached;
+    const missMult = cacheTtl === "1h" ? m.w1h : cacheTtl === "5m" ? m.w5m : 1.0;
+    const rate = (1 - hit) * (m.input * missMult) + hit * m.cached;
     const usd = (monthlyTokens / 1_000_000) * rate;
     return { usd, gbp: usd * USD_TO_GBP };
   }
@@ -803,7 +804,7 @@
   const elModel = document.getElementById("model-select");
   const elTurns = document.getElementById("turns-slider");
   const elTeam = document.getElementById("team-slider");
-  const elCache = document.getElementById("cache-slider");
+  const elCacheTtl = document.getElementById("cache-ttl-select");
   const elAggressive = document.getElementById("toggle-aggressive");
 
   let lastAudit = null;
@@ -820,10 +821,9 @@
 
     const turns = Number(elTurns.value);
     const team = Number(elTeam.value);
-    const cachePct = Number(elCache.value);
+    const cacheTtl = elCacheTtl.value;
     document.getElementById("turns-val").textContent = String(turns);
     document.getElementById("team-val").textContent = String(team);
-    document.getElementById("cache-val").textContent = `${cachePct}%`;
 
     const rep = auditText(text);
     lastAudit = rep;
@@ -853,9 +853,13 @@
     };
     document.getElementById("input-kind-label").textContent = kindMap[rep.kind] || kindMap.empty;
 
-    const currentCost = calcMonthlyCost(rep.totalTokens, elModel.value, turns, team, rep.cacheSafe ? cachePct : 0);
+    const currentHitPct = rep.cacheSafe ? 80 : 0;
+    const afterHitPct = 80;
+    document.getElementById("cache-val").textContent = rep.cacheSafe ? "80% hit" : "0% (BROKEN)";
+
+    const currentCost = calcMonthlyCost(rep.totalTokens, elModel.value, turns, team, currentHitPct, cacheTtl);
     const afterTokens = Math.max(0, rep.totalTokens - effectiveSavedTokens);
-    const afterCost = calcMonthlyCost(afterTokens, elModel.value, turns, team, cachePct);
+    const afterCost = calcMonthlyCost(afterTokens, elModel.value, turns, team, afterHitPct, cacheTtl);
     const savedMoUsd = Math.max(0, currentCost.usd - afterCost.usd);
 
     document.getElementById("kpi-tokens").textContent = rep.totalTokens.toLocaleString();
@@ -983,7 +987,7 @@
     reader.readAsText(file);
   });
 
-  [elInput, elModel, elTurns, elTeam, elCache, elAggressive].forEach((el) => {
+  [elInput, elModel, elTurns, elTeam, elCacheTtl, elAggressive].forEach((el) => {
     el.addEventListener("input", render);
     el.addEventListener("change", render);
   });

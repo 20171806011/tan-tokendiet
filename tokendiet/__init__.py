@@ -1,6 +1,6 @@
 """TAN TokenDiet — Audit, benchmark, and compact MCP schemas & AI agent context files."""
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from .analyzer import AuditReport, Finding, audit_payload, audit_path, audit_text
 from .minifier import MinifyResult, minify_tools_payload
