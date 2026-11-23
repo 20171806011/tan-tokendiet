@@ -16,7 +16,7 @@
     "token_symbol": "USDC",
     "token_contract": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     "decimals": 6,
-    "treasury_address": "0x63cee161084df40f527EFBFDE3e7bC242F4b32FD",
+    "treasury_address": "0xf7D6e17CdD1C803d0cF5240DC5eDab34f8Db8EF5",
     "pro_amount_usdc": 19,
     "audit_amount_usdc": 39
   },
