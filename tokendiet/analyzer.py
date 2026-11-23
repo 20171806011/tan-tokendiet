@@ -83,6 +83,7 @@ class AuditReport:
         turns_per_day: int = 120,
         team_size: int = 1,
         cache_hit_rate: float = 0.0,
+        cache_write_ttl: str = "none",
     ) -> Dict[str, Any]:
         cost = estimate_monthly_cost(
             self.total_tokens,
@@ -90,6 +91,7 @@ class AuditReport:
             team_size=team_size,
             model_id=model_id,
             cache_hit_rate=cache_hit_rate,
+            cache_write_ttl=cache_write_ttl,
         )
         projected_after = max(0, self.total_tokens - self.estimated_reducible_tokens)
         cost_after = estimate_monthly_cost(
@@ -98,6 +100,7 @@ class AuditReport:
             team_size=team_size,
             model_id=model_id,
             cache_hit_rate=cache_hit_rate,
+            cache_write_ttl=cache_write_ttl,
         )
         return {
             "source": self.source,

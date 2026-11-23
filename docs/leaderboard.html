@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCP Server Token &amp; Prompt-Cache Efficiency Leaderboard (2026) — TAN TokenDiet</title>
+  <meta name="description" content="Live, reproducible token-overhead and prompt-cache cost leaderboard across official modelcontextprotocol/servers (44 tools) and top public MCP server repositories. Auto-refreshed via GitHub Actions." />
+  <link rel="canonical" href="https://20171806011.github.io/tan-tokendiet/leaderboard.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="MCP Server Token &amp; Prompt-Cache Efficiency Leaderboard — TAN TokenDiet" />
+  <meta property="og:description" content="Empirical token-bloat benchmarks for official MCP servers (5,840 -> 4,074 lossless / 2,962 aggressive) plus live tracking of major ecosystem MCP repositories." />
+  <meta property="og:url" content="https://20171806011.github.io/tan-tokendiet/leaderboard.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "TAN TokenDiet MCP Server Token & Cache Efficiency Leaderboard",
+    "description": "Empirical token-count, lossless schema compaction savings, and 5m/1h prompt-cache cost measurements for public Model Context Protocol (MCP) servers.",
+    "url": "https://20171806011.github.io/tan-tokendiet/leaderboard.html",
+    "license": "https://opensource.org/licenses/MIT",
+    "creator": { "@type": "Organization", "name": "TAN TokenDiet" }
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .lb-wrap { padding: 48px 0 72px; }
+    .lb-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin: 24px 0 32px; }
+    .lb-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+    .lb-kpi small { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+    .lb-kpi strong { font-family: 'JetBrains Mono', monospace; font-size: 24px; color: var(--ink); }
+    .lb-kpi span { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .lb-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin: 18px 0 14px; }
+    .lb-search { padding: 9px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; min-width: 240px; background: var(--surface); color: var(--ink); }
+    .lb-table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 36px; }
+    .lb-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .lb-table th, .lb-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+    .lb-table th { background: var(--surface-alt, #efede6); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); cursor: pointer; user-select: none; }
+    .lb-table td.num, .lb-table th.num { text-align: right; font-family: 'JetBrains Mono', monospace; }
+    .pill-save { display: inline-block; padding: 3px 8px; border-radius: 999px; background: rgba(11, 122, 86, 0.12); color: #0b7a56; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .pill-warn { display: inline-block; padding: 3px 8px; border-radius: 999px; background: rgba(196, 62, 42, 0.12); color: #c43e2a; font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .cta-banner { background: var(--ink); color: #f7f6f2; border-radius: 14px; padding: 28px 32px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
+    .cta-banner h2 { font-family: 'Instrument Serif', serif; font-size: 30px; font-weight: 400; margin: 0 0 6px; color: #fff; }
+    .cta-banner p { margin: 0; color: #c9cdd4; max-width: 600px; font-size: 14.5px; }
+    .cta-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="./index.html" class="brand">
+        <span class="brand-mark">TAN</span>
+        <span>TokenDiet</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="./index.html#analyzer">Analyzer</a>
+        <a href="./leaderboard.html" aria-current="page"><strong>MCP Leaderboard</strong></a>
+        <a href="./cache-calculator.html">Cache Calculator</a>
+        <a href="./index.html#pricing">Pro &amp; Audit</a>
+        <a href="https://github.com/20171806011/tan-tokendiet" target="_blank" rel="noopener">GitHub CLI</a>
+        <a href="./index.html#pricing" class="nav-cta">Get Pro — $19 USDC</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="lb-wrap">
+    <div class="container">
+      <p class="eyebrow">Live Empirical Benchmark Dataset · Auto-Refreshed Every 6 Hours</p>
+      <h1 style="font-family:'Instrument Serif',serif;font-size:clamp(34px,5vw,52px);line-height:1.08;margin:8px 0 12px;">MCP Server Token &amp; Prompt-Cache Efficiency Leaderboard</h1>
+      <p class="hero-lead" style="max-width:780px;">
+        Every MCP server you attach injects its entire <code>tools/list</code> JSON schema into every turn of Claude Code, Cursor, or your agent runtime.
+        Below are reproducible <strong>exact schema measurements</strong> across all 6 official reference servers (44 tools) plus live telemetry on the highest-star MCP repositories on GitHub.
+      </p>
+      <p id="lb-updated" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-top:8px;">Loading live dataset…</p>
+
+      <div class="lb-kpis">
+        <div class="lb-kpi">
+          <small>Official MCP Tools Audited</small>
+          <strong id="kpi-tools">44</strong>
+          <span>6 reference servers · 100% invariants</span>
+        </div>
+        <div class="lb-kpi">
+          <small>Safe Lossless Compaction</small>
+          <strong style="color:#0b7a56" id="kpi-safe">-30.2%</strong>
+          <span>5,840 → 4,074 tokens / turn</span>
+        </div>
+        <div class="lb-kpi">
+          <small>Aggressive Compaction</small>
+          <strong style="color:#0b7a56" id="kpi-agg">-49.3%</strong>
+          <span>5,840 → 2,962 tokens / turn</span>
+        </div>
+        <div class="lb-kpi">
+          <small>Broken 1h Cache Exposure</small>
+          <strong style="color:#c43e2a">$2,102/mo</strong>
+          <span>10 devs × 200 turns/d (Claude Sonnet)</span>
+        </div>
+      </div>
+
+      <section aria-labelledby="official-heading">
+        <div class="lb-controls">
+          <div>
+            <h2 id="official-heading" style="margin:0;font-size:22px;">1. Exact Tool-Schema Audits (Official Reference Servers)</h2>
+            <p style="margin:4px 0 0;font-size:13.5px;color:var(--muted);">Measured directly with <code>tokendiet audit</code> &amp; <code>tokendiet minify</code>. 10-dev team @ 200 turns/day on Claude Sonnet 4.x.</p>
+          </div>
+          <select id="sort-official" class="lb-search" style="min-width:200px;" aria-label="Sort official benchmarks">
+            <option value="raw_tokens">Sort by Raw Tokens (High → Low)</option>
+            <option value="safe_savings_pct">Sort by Lossless Savings %</option>
+            <option value="aggressive_savings_pct">Sort by Aggressive Savings %</option>
+            <option value="tools">Sort by Tool Count</option>
+          </select>
+        </div>
+
+        <div class="lb-table-wrap">
+          <table class="lb-table">
+            <thead>
+              <tr>
+                <th>MCP Server</th>
+                <th class="num">Tools</th>
+                <th class="num">Raw Tok/Turn</th>
+                <th class="num">Lossless Tok</th>
+                <th class="num">Lossless Cut</th>
+                <th class="num">Aggressive Cut</th>
+                <th class="num">10-Dev Uncached/Mo</th>
+                <th class="num">1h Cache Miss/Mo</th>
+                <th>Invariants</th>
+              </tr>
+            </thead>
+            <tbody id="official-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="eco-heading">
+        <div class="lb-controls">
+          <div>
+            <h2 id="eco-heading" style="margin:0;font-size:22px;">2. Top Public Ecosystem MCP Servers (Live GitHub Telemetry)</h2>
+            <p style="margin:4px 0 0;font-size:13.5px;color:var(--muted);">Live star counts, recent push activity, and README context footprint refreshed automatically via public GitHub Actions.</p>
+          </div>
+          <input type="search" id="eco-filter" class="lb-search" placeholder="Filter by server, category, or language…" aria-label="Filter ecosystem servers" />
+        </div>
+
+        <div class="lb-table-wrap">
+          <table class="lb-table">
+            <thead>
+              <tr>
+                <th>Repository</th>
+                <th>Category</th>
+                <th>Language</th>
+                <th class="num">GitHub Stars</th>
+                <th class="num">Est. README Tokens</th>
+                <th>Last Push (UTC)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="eco-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="cta-banner">
+        <div>
+          <h2>Want your private MCP stack audited &amp; gated in CI?</h2>
+          <p>
+            Run the free 100% client-side analyzer right now, get the <strong>TokenDiet Pro Kit ($19 USDC on Base)</strong> with GitHub PR budget gates &amp; multi-repo FinOps HTML reports,
+            or order a <strong>24-hour Done-For-You Custom MCP Audit ($39 USDC)</strong>.
+          </p>
+        </div>
+        <div class="cta-actions">
+          <a href="./index.html#analyzer" class="btn" style="background:#fff;color:#141619;border-color:#fff;">Open Live Analyzer</a>
+          <a href="./cache-calculator.html" class="btn" style="background:transparent;color:#fff;border-color:#5a606a;">5m vs 1h Cache Simulator</a>
+          <a href="./index.html#pricing" class="btn btn-save">Buy Pro ($19 USDC)</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const FALLBACK_DATA = {
+      generated_at_utc: "2026-11-23T06:25:00Z",
+      official_measured: [
+        { name: "mcp-server-filesystem", repo: "modelcontextprotocol/servers", repo_url: "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem", tools: 16, raw_tokens: 2133, safe_tokens: 1581, safe_savings_pct: 25.9, aggressive_savings_pct: 56.4, monthly_uncached_usd_10dev: 383.94, monthly_1h_miss_usd_10dev: 767.88, invariants_passed: true },
+        { name: "mcp-server-git", repo: "modelcontextprotocol/servers", repo_url: "https://github.com/modelcontextprotocol/servers/tree/main/src/git", tools: 14, raw_tokens: 1805, safe_tokens: 1170, safe_savings_pct: 35.2, aggressive_savings_pct: 35.2, monthly_uncached_usd_10dev: 324.90, monthly_1h_miss_usd_10dev: 649.80, invariants_passed: true },
+        { name: "mcp-server-memory", repo: "modelcontextprotocol/servers", repo_url: "https://github.com/modelcontextprotocol/servers/tree/main/src/memory", tools: 9, raw_tokens: 1014, safe_tokens: 704, safe_savings_pct: 30.6, aggressive_savings_pct: 59.5, monthly_uncached_usd_10dev: 182.52, monthly_1h_miss_usd_10dev: 365.04, invariants_passed: true },
+        { name: "mcp-server-time", repo: "modelcontextprotocol/servers", repo_url: "https://github.com/modelcontextprotocol/servers/tree/main/src/time", tools: 3, raw_tokens: 354, safe_tokens: 213, safe_savings_pct: 39.8, aggressive_savings_pct: 39.8, monthly_uncached_usd_10dev: 63.72, monthly_1h_miss_usd_10dev: 127.44, invariants_passed: true },
+        { name: "mcp-server-sequentialthinking", repo: "modelcontextprotocol/servers", repo_url: "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking", tools: 1, raw_tokens: 294, safe_tokens: 234, safe_savings_pct: 20.4, aggressive_savings_pct: 77.6, monthly_uncached_usd_10dev: 52.92, monthly_1h_miss_usd_10dev: 105.84, invariants_passed: true },
+        { name: "mcp-server-fetch", repo: "modelcontextprotocol/servers", repo_url: "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch", tools: 1, raw_tokens: 257, safe_tokens: 189, safe_savings_pct: 26.5, aggressive_savings_pct: 26.5, monthly_uncached_usd_10dev: 46.26, monthly_1h_miss_usd_10dev: 92.52, invariants_passed: true }
+      ],
+      ecosystem_watchlist: []
+    };
+
+    let dataset = FALLBACK_DATA;
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    }
+
+    function renderOfficial() {
+      const sortKey = document.getElementById("sort-official").value;
+      const rows = [...(dataset.official_measured || [])].sort((a, b) => (b[sortKey] || 0) - (a[sortKey] || 0));
+      const tbody = document.getElementById("official-tbody");
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td><a href="${esc(r.repo_url)}" target="_blank" rel="noopener"><code>${esc(r.name)}</code></a></td>
+          <td class="num">${r.tools}</td>
+          <td class="num">${Number(r.raw_tokens).toLocaleString()}</td>
+          <td class="num">${Number(r.safe_tokens).toLocaleString()}</td>
+          <td class="num"><span class="pill-save">-${r.safe_savings_pct}%</span></td>
+          <td class="num"><span class="pill-save">-${r.aggressive_savings_pct}%</span></td>
+          <td class="num">$${Number(r.monthly_uncached_usd_10dev).toFixed(2)}</td>
+          <td class="num"><span class="pill-warn">$${Number(r.monthly_1h_miss_usd_10dev).toFixed(2)}</span></td>
+          <td>${r.invariants_passed ? "100% Verified" : "Check"}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderEco() {
+      const q = (document.getElementById("eco-filter").value || "").trim().toLowerCase();
+      const rows = (dataset.ecosystem_watchlist || []).filter(r => {
+        if (!q) return true;
+        return `${r.repo} ${r.category} ${r.language} ${r.description}`.toLowerCase().includes(q);
+      });
+      const tbody = document.getElementById("eco-tbody");
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px;">No matching ecosystem MCP repositories.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>
+            <a href="${esc(r.repo_url)}" target="_blank" rel="noopener"><strong>${esc(r.repo)}</strong></a>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${esc(r.description)}</div>
+          </td>
+          <td>${esc(r.category)}</td>
+          <td><code>${esc(r.language)}</code></td>
+          <td class="num">${Number(r.stars || 0).toLocaleString()}★</td>
+          <td class="num">${Number(r.est_doc_tokens || 0).toLocaleString()} tok</td>
+          <td><code>${esc((r.pushed_at || "").slice(0, 10) || "—")}</code></td>
+          <td><a href="./index.html#analyzer" class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">Audit</a></td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("sort-official").addEventListener("change", renderOfficial);
+    document.getElementById("eco-filter").addEventListener("input", renderEco);
+
+    fetch("./data/mcp_leaderboard.json")
+      .then(r => r.ok ? r.json() : FALLBACK_DATA)
+      .then(d => {
+        dataset = d;
+        document.getElementById("lb-updated").textContent =
+          `Last refreshed: ${d.generated_at_utc} · ${(d.official_measured || []).length} exact schema audits + ${(d.ecosystem_watchlist || []).length} tracked public MCP repositories`;
+        renderOfficial();
+        renderEco();
+      })
+      .catch(() => {
+        document.getElementById("lb-updated").textContent = `Embedded benchmark snapshot (${FALLBACK_DATA.generated_at_utc})`;
+        renderOfficial();
+        renderEco();
+      });
+  </script>
+</body>
+</html>

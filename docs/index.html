@@ -4,7 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TAN TokenDiet — MCP Schema &amp; AI Agent Context Cost Auditor</title>
-  <meta name="description" content="Audit, benchmark, and safely compact MCP tool schemas, mcp.json configs, and AGENTS.md / CLAUDE.md context files. Cut LLM token burn and fix prompt-cache misses — 100% client-side." />
+  <meta name="description" content="Audit, benchmark, and safely compact MCP tool schemas, mcp.json configs, and AGENTS.md / CLAUDE.md context files. Cut LLM token burn by 30-49% and fix prompt-cache misses — 100% client-side." />
+  <link rel="canonical" href="https://20171806011.github.io/tan-tokendiet/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="TAN TokenDiet — MCP Schema &amp; AI Agent Context Cost Auditor" />
+  <meta property="og:description" content="Zero-dependency Python CLI + 100% client-side web analyzer that audits 12 MCP token-bloat &amp; prompt-cache-busting rules and safely minifies JSON schemas with 100% invariant checks." />
+  <meta property="og:url" content="https://20171806011.github.io/tan-tokendiet/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TAN TokenDiet — Cut MCP Tool Schema &amp; Prompt-Cache Token Burn" />
+  <meta name="twitter:description" content="Measured across all 6 official modelcontextprotocol/servers (44 tools): -30.2% lossless / -49.3% aggressive compaction with 100% structural invariants." />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "TAN TokenDiet",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Cross-platform, Web",
+    "softwareVersion": "1.3.0",
+    "url": "https://20171806011.github.io/tan-tokendiet/",
+    "codeRepository": "https://github.com/20171806011/tan-tokendiet",
+    "license": "https://opensource.org/licenses/MIT",
+    "offers": [
+      { "@type": "Offer", "name": "Open-Source CLI & Web Analyzer", "price": "0", "priceCurrency": "USD" },
+      { "@type": "Offer", "name": "TAN TokenDiet Pro CI & FinOps Kit", "price": "19", "priceCurrency": "USD" },
+      { "@type": "Offer", "name": "24-Hour Done-For-You Custom MCP Audit", "price": "39", "priceCurrency": "USD" }
+    ]
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -19,11 +45,11 @@
       </a>
       <nav class="nav-links" aria-label="Primary navigation">
         <a href="#analyzer">Analyzer</a>
-        <a href="#benchmarks">Benchmarks</a>
+        <a href="./leaderboard.html">MCP Leaderboard</a>
+        <a href="./cache-calculator.html">Cache Calculator</a>
         <a href="#pricing">Pro &amp; Audit</a>
-        <a href="#policies">Policies</a>
         <a href="https://github.com/20171806011/tan-tokendiet" target="_blank" rel="noopener">GitHub CLI</a>
-        <a href="#pricing" class="nav-cta">Get Pro — £15</a>
+        <a href="#pricing" class="nav-cta">Get Pro — $19 USDC</a>
       </nav>
     </div>
   </header>
@@ -32,7 +58,7 @@
     <section class="hero">
       <div class="container hero-grid">
         <div>
-          <p class="eyebrow">MCP &amp; AI Agent FinOps Diagnostic · v1.1</p>
+          <p class="eyebrow">MCP &amp; AI Agent FinOps Diagnostic · v1.3</p>
           <h1>Stop paying a silent token tax on every agent turn.</h1>
           <p class="hero-lead">
             Paste any MCP <code>tools/list</code> schema, <code>mcp.json</code>, or <code>AGENTS.md</code> / <code>CLAUDE.md</code> file.

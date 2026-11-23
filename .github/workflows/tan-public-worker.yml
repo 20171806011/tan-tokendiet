@@ -1,0 +1,67 @@
+name: TAN TokenDiet Public Benchmark & Continuity Worker (Free Unlimited Compute)
+
+on:
+  schedule:
+    # Runs every 6 hours on public repo (unlimited free GitHub Actions minutes; 0 private quota impact)
+    - cron: "22 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: tan-tokendiet-public-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-benchmarks-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout tan-tokendiet
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run full unit test suite
+        run: python -m unittest discover -s tests -v
+
+      - name: Refresh live MCP Leaderboard & Sitemap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/update_leaderboard.py
+
+      - name: Verify live GitHub Pages storefront & Base USDC checkout config
+        run: |
+          python3 - << 'EOF'
+          import json, urllib.request
+          for url in [
+              "https://20171806011.github.io/tan-tokendiet/",
+              "https://20171806011.github.io/tan-tokendiet/checkout-config.json",
+          ]:
+              req = urllib.request.Request(url, headers={"User-Agent": "tan-public-worker/1.3"})
+              with urllib.request.urlopen(req, timeout=15) as r:
+                  assert r.status == 200, f"Unexpected status {r.status} for {url}"
+                  if url.endswith(".json"):
+                      cfg = json.loads(r.read().decode("utf-8"))
+                      assert cfg.get("onchain_usdc", {}).get("enabled") is True
+                      assert cfg["onchain_usdc"]["treasury_address"] == "0x63cee161084df40f527EFBFDE3e7bC242F4b32FD"
+          print("Live GitHub Pages + Base USDC checkout verified HTTP 200 OK")
+          EOF
+
+      - name: Commit refreshed benchmark dataset if changed
+        run: |
+          git config user.name "tan-autopilot[bot]"
+          git config user.email "tan-autopilot@users.noreply.github.com"
+          git add docs/data/mcp_leaderboard.json docs/sitemap.xml
+          if git diff --cached --quiet; then
+            echo "No benchmark updates to commit."
+            exit 0
+          fi
+          git commit -m "chore(leaderboard): refresh live MCP server token & star telemetry"
+          git push origin HEAD:main

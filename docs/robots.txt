@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://20171806011.github.io/tan-tokendiet/sitemap.xml

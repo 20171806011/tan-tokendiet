@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Code 5-Min vs 1-Hour Prompt Cache Cost Calculator (2026) — TAN TokenDiet</title>
+  <meta name="description" content="Interactive 5-minute (1.25x) vs 1-hour (2.0x) prompt-cache break-even calculator for Claude Sonnet/Opus, GPT-5, and Gemini 2.5. Quantify MCP tool schema overhead and monthly savings." />
+  <link rel="canonical" href="https://20171806011.github.io/tan-tokendiet/cache-calculator.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Claude Code 5m vs 1h Prompt-Cache Cost Calculator — TAN TokenDiet" />
+  <meta property="og:description" content="Calculate whether 5-minute or 1-hour prompt-cache TTL saves or wastes money for your MCP tool stack and agent turn cadence." />
+  <meta property="og:url" content="https://20171806011.github.io/tan-tokendiet/cache-calculator.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TAN TokenDiet Prompt-Cache 5m vs 1h Break-Even Calculator",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web",
+    "url": "https://20171806011.github.io/tan-tokendiet/cache-calculator.html",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .calc-wrap { padding: 48px 0 72px; }
+    .calc-grid { display: grid; grid-template-columns: minmax(290px, 1fr) minmax(320px, 1.2fr); gap: 24px; margin-top: 28px; }
+    @media (max-width: 860px) { .calc-grid { grid-template-columns: 1fr; } }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+    .field { margin-bottom: 18px; }
+    .field label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .field input[type="range"], .field select { width: 100%; }
+    .field select { padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg, #f7f6f2); color: var(--ink); font-family: inherit; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .result-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    @media (max-width: 640px) { .result-cards { grid-template-columns: 1fr; } }
+    .rcard { background: #fbfaf7; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .rcard.winner { border-color: #0b7a56; background: rgba(11, 122, 86, 0.06); }
+    .rcard small { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .rcard strong { display: block; font-family: 'JetBrains Mono', monospace; font-size: 22px; margin: 6px 0 2px; }
+    .verdict-box { background: var(--ink); color: #f7f6f2; border-radius: 12px; padding: 18px 20px; margin-bottom: 18px; }
+    .verdict-box strong { color: #5eead4; }
+    .save-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .save-row:last-child { border-bottom: 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="./index.html" class="brand">
+        <span class="brand-mark">TAN</span>
+        <span>TokenDiet</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="./index.html#analyzer">Analyzer</a>
+        <a href="./leaderboard.html">MCP Leaderboard</a>
+        <a href="./cache-calculator.html" aria-current="page"><strong>Cache Calculator</strong></a>
+        <a href="./index.html#pricing">Pro &amp; Audit</a>
+        <a href="https://github.com/20171806011/tan-tokendiet" target="_blank" rel="noopener">GitHub CLI</a>
+        <a href="./index.html#pricing" class="nav-cta">Get Pro — $19 USDC</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="calc-wrap">
+    <div class="container">
+      <p class="eyebrow">LLM Prompt Caching Economics · 2026 Reference Model</p>
+      <h1 style="font-family:'Instrument Serif',serif;font-size:clamp(34px,5vw,52px);line-height:1.08;margin:8px 0 12px;">5-Minute vs 1-Hour Prompt Cache Break-Even Calculator</h1>
+      <p class="hero-lead" style="max-width:780px;">
+        Anthropic charges <strong>1.25×</strong> base input price to write a 5-minute prompt cache and <strong>2.0×</strong> to write a 1-hour cache (e.g., Claude Code long sessions), while cache reads cost <strong>0.10×</strong>.
+        If dynamic timestamps or unsorted MCP tool schemas bust your prefix cache, 1-hour TTL doubles your static-context bill instead of saving 90%. Model your exact break-even point below.
+      </p>
+
+      <div class="calc-grid">
+        <div class="panel">
+          <h2 style="margin:0 0 18px;font-size:18px;">Workload Parameters</h2>
+          <div class="field">
+            <label for="c-model"><span>Model</span></label>
+            <select id="c-model">
+              <option value="claude-sonnet" selected>Claude Sonnet 4.x ($3.00 base · $0.30 read · 1.25×/2.0× write)</option>
+              <option value="claude-opus">Claude Opus 4.x ($15.00 base · $1.50 read · 1.25×/2.0× write)</option>
+              <option value="gpt-5">GPT-5 ($2.50 base · $0.25 read · 1.0× write)</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro ($1.25 base · $0.31 read · 1.0× write)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="c-tokens"><span>Static Prefix Tokens (MCP Tools + System + CLAUDE.md)</span><span class="mono" id="v-tokens">6,000</span></label>
+            <input type="range" id="c-tokens" min="500" max="50000" step="500" value="6000" />
+          </div>
+          <div class="field">
+            <label for="c-turns"><span>Agent Turns / Dev / Day</span><span class="mono" id="v-turns">200</span></label>
+            <input type="range" id="c-turns" min="20" max="1000" step="20" value="200" />
+          </div>
+          <div class="field">
+            <label for="c-devs"><span>Developers / Active Agents</span><span class="mono" id="v-devs">10</span></label>
+            <input type="range" id="c-devs" min="1" max="100" step="1" value="10" />
+          </div>
+          <div class="field">
+            <label for="c-hit5"><span>Estimated 5m Cache Hit Rate</span><span class="mono" id="v-hit5">65%</span></label>
+            <input type="range" id="c-hit5" min="0" max="98" step="1" value="65" />
+          </div>
+          <div class="field">
+            <label for="c-hit1h"><span>Estimated 1h Cache Hit Rate</span><span class="mono" id="v-hit1h">88%</span></label>
+            <input type="range" id="c-hit1h" min="0" max="98" step="1" value="88" />
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 style="margin:0 0 16px;font-size:18px;">Monthly Static-Context Cost Comparison</h2>
+          <div class="result-cards">
+            <div class="rcard" id="card-none">
+              <small>Uncached (1.0×)</small>
+              <strong id="out-none">$0.00</strong>
+              <span class="mono" style="font-size:12px;color:var(--muted);" id="out-none-gbp">£0.00/mo</span>
+            </div>
+            <div class="rcard" id="card-5m">
+              <small>5-Min TTL (1.25× write)</small>
+              <strong id="out-5m">$0.00</strong>
+              <span class="mono" style="font-size:12px;color:var(--muted);" id="out-5m-gbp">£0.00/mo</span>
+            </div>
+            <div class="rcard" id="card-1h">
+              <small>1-Hour TTL (2.0× write)</small>
+              <strong id="out-1h">$0.00</strong>
+              <span class="mono" style="font-size:12px;color:var(--muted);" id="out-1h-gbp">£0.00/mo</span>
+            </div>
+          </div>
+
+          <div class="verdict-box">
+            <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:4px;">Economic Recommendation</div>
+            <div id="out-verdict" style="font-size:15px;line-height:1.5;">—</div>
+          </div>
+
+          <h3 style="margin:14px 0 8px;font-size:15px;">Compound Savings with TAN TokenDiet Schema Compaction</h3>
+          <div>
+            <div class="save-row">
+              <span>Lossless Compaction (-30.2% verified avg on official MCP)</span>
+              <strong class="mono" style="color:#0b7a56;" id="out-save-safe">$0.00 / mo</strong>
+            </div>
+            <div class="save-row">
+              <span>Aggressive Compaction (-49.3% verified avg)</span>
+              <strong class="mono" style="color:#0b7a56;" id="out-save-agg">$0.00 / mo</strong>
+            </div>
+            <div class="save-row">
+              <span>Penalty if a Timestamp/UUID Busts 1h Cache (0% Hit)</span>
+              <strong class="mono" style="color:#c43e2a;" id="out-bust-penalty">$0.00 / mo</strong>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="./index.html#analyzer" class="btn btn-save">Audit Your Exact Schemas Free →</a>
+            <a href="./index.html#pricing" class="btn">Get Pro CI Gate ($19 USDC)</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const MODELS = {
+      "claude-sonnet": { base: 3.00, read: 0.30, w5: 1.25, w1h: 2.00 },
+      "claude-opus":   { base: 15.00, read: 1.50, w5: 1.25, w1h: 2.00 },
+      "gpt-5":         { base: 2.50, read: 0.25, w5: 1.00, w1h: 1.00 },
+      "gemini-2.5-pro":{ base: 1.25, read: 0.31, w5: 1.00, w1h: 1.00 },
+    };
+    const GBP = 0.79;
+
+    function recalc() {
+      const m = MODELS[document.getElementById("c-model").value];
+      const tokens = Number(document.getElementById("c-tokens").value);
+      const turns = Number(document.getElementById("c-turns").value);
+      const devs = Number(document.getElementById("c-devs").value);
+      const hit5 = Number(document.getElementById("c-hit5").value) / 100;
+      const hit1h = Number(document.getElementById("c-hit1h").value) / 100;
+
+      document.getElementById("v-tokens").textContent = tokens.toLocaleString();
+      document.getElementById("v-turns").textContent = turns.toLocaleString();
+      document.getElementById("v-devs").textContent = devs.toLocaleString();
+      document.getElementById("v-hit5").textContent = Math.round(hit5 * 100) + "%";
+      document.getElementById("v-hit1h").textContent = Math.round(hit1h * 100) + "%";
+
+      const mTokens = (tokens * turns * devs * 30) / 1e6;
+      const costNone = mTokens * m.base;
+      const cost5m = mTokens * ((1 - hit5) * m.base * m.w5 + hit5 * m.read);
+      const cost1h = mTokens * ((1 - hit1h) * m.base * m.w1h + hit1h * m.read);
+      const bust1h = mTokens * m.base * m.w1h;
+
+      document.getElementById("out-none").textContent = "$" + costNone.toFixed(2);
+      document.getElementById("out-none-gbp").textContent = "£" + (costNone * GBP).toFixed(2) + "/mo";
+      document.getElementById("out-5m").textContent = "$" + cost5m.toFixed(2);
+      document.getElementById("out-5m-gbp").textContent = "£" + (cost5m * GBP).toFixed(2) + "/mo";
+      document.getElementById("out-1h").textContent = "$" + cost1h.toFixed(2);
+      document.getElementById("out-1h-gbp").textContent = "£" + (cost1h * GBP).toFixed(2) + "/mo";
+
+      const best = Math.min(costNone, cost5m, cost1h);
+      ["card-none", "card-5m", "card-1h"].forEach(id => document.getElementById(id).classList.remove("winner"));
+      let winnerName = "Uncached";
+      if (best === cost1h) {
+        document.getElementById("card-1h").classList.add("winner");
+        winnerName = "1-Hour Cache TTL";
+      } else if (best === cost5m) {
+        document.getElementById("card-5m").classList.add("winner");
+        winnerName = "5-Minute Cache TTL";
+      } else {
+        document.getElementById("card-none").classList.add("winner");
+      }
+
+      const diff5vs1 = Math.abs(cost5m - cost1h).toFixed(2);
+      document.getElementById("out-verdict").innerHTML =
+        `<strong>${winnerName} wins</strong> at $${best.toFixed(2)}/mo (${best === cost1h ? "saves $" + diff5vs1 + "/mo vs 5m TTL" : best === cost5m ? "saves $" + diff5vs1 + "/mo vs 1h TTL" : "cache hit rate is too low for write multipliers"}). ` +
+        `Compacting static MCP tool schemas with TokenDiet reduces this further by <strong>$${(best * 0.302).toFixed(2)}–$${(best * 0.493).toFixed(2)}/mo</strong>.`;
+
+      document.getElementById("out-save-safe").textContent = "$" + (best * 0.302).toFixed(2) + " / mo ($" + (best * 0.302 * 12).toFixed(0) + "/yr)";
+      document.getElementById("out-save-agg").textContent = "$" + (best * 0.493).toFixed(2) + " / mo ($" + (best * 0.493 * 12).toFixed(0) + "/yr)";
+      document.getElementById("out-bust-penalty").textContent = "$" + bust1h.toFixed(2) + " / mo";
+    }
+
+    ["c-model", "c-tokens", "c-turns", "c-devs", "c-hit5", "c-hit1h"].forEach(id => {
+      document.getElementById(id).addEventListener("input", recalc);
+      document.getElementById(id).addEventListener("change", recalc);
+    });
+    recalc();
+  </script>
+</body>
+</html>
