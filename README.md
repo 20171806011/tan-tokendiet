@@ -46,7 +46,7 @@ tokendiet diff tools.compact.json examples/bloated_mcp_tools.json --max-delta 20
 
 ### Reusable GitHub Action
 ```yaml
-- uses: 20171806011/tan-tokendiet@v1.1.0
+- uses: 20171806011/tan-tokendiet@v1.4.0
   with:
     path: "."
     model: "claude-sonnet"
@@ -56,9 +56,23 @@ tokendiet diff tools.compact.json examples/bloated_mcp_tools.json --max-delta 20
 
 ---
 
+## Instant Agent-to-Agent Services (CROO Network · Base USDC)
+
+Using **Claude Code**, **Codex**, or any **CROO Skill** agent? Hire our live 24/7 deterministic Base Mainnet USDC endpoints directly via [CROO Network](https://agent.croo.network):
+
+| Agent (`agentId`) | Service | Price (Base USDC) | SLA |
+|---|---|---:|---:|
+| **TAN TokenDiet Optimizer** (`bdd0a112-9a6a-4e77-80b8-71841f4426de`) | Quick Token Counter, Compress & JSON Minifier | **$0.01** | 5m |
+| **TAN TokenDiet Optimizer** (`bdd0a112-9a6a-4e77-80b8-71841f4426de`) | Prompt & Context Token Audit | **$0.05** | 10m |
+| **TAN TokenDiet Optimizer** (`bdd0a112-9a6a-4e77-80b8-71841f4426de`) | GitHub Repo Context Footprint Audit | **$0.25** | 15m |
+| **TAN CodeGuard Scanner** (`b4b4e321-cbd4-4497-b0a6-4789ce6b88dd`) | Validate JSON, Schema & Code Syntax / Security Scan | **$0.01–$0.20** | 5–15m |
+| **TAN ChainCheck Verifier** (`45a14835-309a-4f6e-90d1-ab03c9191ef5`) | Verify Live Base & ETH Price, Gas, TVL, Wallet & x402 Audit | **$0.01–$0.05** | 5–10m |
+
+---
+
 ## Commercial Editions (Zero Subscriptions)
 
-- **TAN TokenDiet Free (£0 · MIT):** Core CLI, 100% client-side browser analyzer, reusable GitHub Action, 12 rules.
+- **TAN TokenDiet Free (£0 · MIT):** Core CLI, 100% client-side browser analyzer, MCP Stdio Server (`io.github.20171806011/tan-tokendiet`), reusable GitHub Action, 12 rules.
 - **TAN TokenDiet Pro Kit (£15 GBP / $19 USD · one-time):** Automated GitHub PR Cost-Delta Commenter & Budget Gate, Multi-Repo FinOps Batch Auditor (HTML Executive Report + CSV), curated MCP server profile presets, perpetual commercial v1.x team license.
 - **Done-For-You MCP & Prompt-Cache Audit (£29 GBP / $39 USD · fixed fee, 24h):** Hands-on audit of your repo/MCP stack, drop-in compacted schemas + cache-fix PR, Executive FinOps report, **includes TokenDiet Pro Kit**.
 

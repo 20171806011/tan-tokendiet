@@ -20,12 +20,13 @@
     "name": "TAN TokenDiet",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Cross-platform, Web",
-    "softwareVersion": "1.3.0",
+    "softwareVersion": "1.4.0",
     "url": "https://20171806011.github.io/tan-tokendiet/",
     "codeRepository": "https://github.com/20171806011/tan-tokendiet",
     "license": "https://opensource.org/licenses/MIT",
     "offers": [
       { "@type": "Offer", "name": "Open-Source CLI & Web Analyzer", "price": "0", "priceCurrency": "USD" },
+      { "@type": "Offer", "name": "CROO Agent Micro-Service (Token Counter & Minifier)", "price": "0.01", "priceCurrency": "USD" },
       { "@type": "Offer", "name": "TAN TokenDiet Pro CI & FinOps Kit", "price": "19", "priceCurrency": "USD" },
       { "@type": "Offer", "name": "24-Hour Done-For-You Custom MCP Audit", "price": "39", "priceCurrency": "USD" }
     ]
@@ -58,7 +59,7 @@
     <section class="hero">
       <div class="container hero-grid">
         <div>
-          <p class="eyebrow">MCP &amp; AI Agent FinOps Diagnostic · v1.3</p>
+          <p class="eyebrow">MCP &amp; AI Agent FinOps Diagnostic · v1.4.0 · Official MCP Registry</p>
           <h1>Stop paying a silent token tax on every agent turn.</h1>
           <p class="hero-lead">
             Paste any MCP <code>tools/list</code> schema, <code>mcp.json</code>, or <code>AGENTS.md</code> / <code>CLAUDE.md</code> file.
@@ -257,7 +258,7 @@
               <ul class="plan-list">
                 <li>100% client-side web analyzer &amp; safe schema minifier</li>
                 <li>Zero-dependency Python CLI (<code>audit</code>, <code>minify</code>, <code>diff</code>)</li>
-                <li>Reusable basic GitHub Action (<code>20171806011/tan-tokendiet@v1.1.0</code>)</li>
+                <li>Reusable basic GitHub Action (<code>20171806011/tan-tokendiet@v1.4.0</code>)</li>
                 <li>All 12 static bloat &amp; 5m/1h prompt-cache detectors</li>
                 <li>Markdown audit report export</li>
               </ul>
@@ -308,6 +309,52 @@
               <p class="checkout-status-note">Instant on-chain checkout or <a href="https://github.com/20171806011/tan-tokendiet/issues/new?template=custom-mcp-audit.md" target="_blank" rel="noopener">request invoice via GitHub</a>.</p>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="croo-agents">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Live Agent-to-Agent Endpoints · CROO Network · Base USDC</p>
+          <h2>Pay per call from $0.01 USDC with Claude Code, Codex, or CROO Skill.</h2>
+          <p class="section-sub">
+            Our three deterministic Base Mainnet agents run 24/7 with 5–15 minute SLAs and escrowed on-chain settlement on <a href="https://agent.croo.network" target="_blank" rel="noopener">CROO Network</a>.
+          </p>
+        </div>
+
+        <div class="policy-grid">
+          <article class="policy-block">
+            <h3>TAN TokenDiet Optimizer · $0.01–$0.25 USDC</h3>
+            <p>
+              <code>agentId: bdd0a112-9a6a-4e77-80b8-71841f4426de</code><br />
+              Quick Token Counter, Compress &amp; JSON Minifier (<strong>$0.01</strong>, 5m), Prompt &amp; Context Token Audit (<strong>$0.05</strong>, 10m), and GitHub Repo Context Footprint Audit (<strong>$0.25</strong>, 15m).
+            </p>
+          </article>
+
+          <article class="policy-block">
+            <h3>TAN CodeGuard Scanner · $0.01–$0.20 USDC</h3>
+            <p>
+              <code>agentId: b4b4e321-cbd4-4497-b0a6-4789ce6b88dd</code><br />
+              Validate JSON, Schema &amp; Code Syntax (<strong>$0.01</strong>, 5m), Instant Code &amp; Contract Security Scan across Solidity/TS/Python/Go/Rust (<strong>$0.05</strong>, 10m), and GitHub Repo CI &amp; Security Audit (<strong>$0.20</strong>, 15m).
+            </p>
+          </article>
+
+          <article class="policy-block">
+            <h3>TAN ChainCheck Verifier · $0.01–$0.05 USDC</h3>
+            <p>
+              <code>agentId: 45a14835-309a-4f6e-90d1-ab03c9191ef5</code><br />
+              Verify Live Base &amp; ETH Price, Gas &amp; DeFi TVL (<strong>$0.01</strong>, 5m), Live EVM Wallet &amp; Contract Snapshot (<strong>$0.02</strong>, 5m), and Live x402 / MCP / Agent Endpoint Audit (<strong>$0.05</strong>, 10m).
+            </p>
+          </article>
+
+          <article class="policy-block">
+            <h3>Official MCP Registry Package</h3>
+            <p>
+              Listed as <code>io.github.20171806011/tan-tokendiet</code> (<code>v1.4.0</code>). Run locally via Docker with zero external API calls:<br />
+              <code>docker run -i --rm ghcr.io/20171806011/tan-tokendiet:1.4.0</code>
+            </p>
+          </article>
         </div>
       </div>
     </section>
@@ -399,7 +446,7 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <span>© 2026 TAN DevTools · TAN TokenDiet v1.2.0</span>
+      <span>© 2026 TAN DevTools · TAN TokenDiet v1.4.0</span>
       <span>Core CLI licensed under MIT · Browser tool executes 100% client-side</span>
     </div>
   </footer>
