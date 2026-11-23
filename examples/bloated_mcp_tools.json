@@ -1,0 +1,92 @@
+{
+  "tools": [
+    {
+      "name": "github_search_issues",
+      "description": "This tool allows you to search GitHub issues and pull requests across public and private repositories. Please note that you should always verify pagination limits before calling this tool in a loop. Always return structured JSON responses with citations to the exact issue URL.\n\nExample:\n```json\n{\"query\": \"is:open label:bug\", \"repo\": \"org/app\", \"per_page\": 20}\n```\nGenerated at 2026-11-23T05:00:00Z.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "repo": {
+            "type": "string",
+            "title": "Repo",
+            "description": "The full repository name in owner/repo format. For example: {\"repo\": \"facebook/react\"}. Make sure that you include both the organization owner and the repository slug separated by a forward slash."
+          },
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "GitHub search query string supporting standard qualifiers such as is:open, label:, author:, and created:>YYYY-MM-DD."
+          },
+          "sort": {
+            "type": "string",
+            "title": "Sort",
+            "enum": ["created", "updated", "comments", "reactions", "reactions-+1", "reactions--1", "reactions-smile", "reactions-thinking_face", "reactions-heart", "reactions-tada", "interactions", "best-match", "relevance", "asc", "desc", "priority"]
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "analytics_run_sql",
+      "description": "Use this tool whenever you need to execute a read-only SQL query against the analytics warehouse. Always return structured JSON responses with citations to the exact issue URL. Please note that destructive DDL or DML statements are blocked at the database proxy layer.\n\nExample:\n```sql\nSELECT date_trunc('day', created_at), count(*) FROM events GROUP BY 1 LIMIT 50;\n```",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sql": {
+            "type": "string",
+            "title": "Sql",
+            "description": "A valid PostgreSQL SELECT statement to run against the read replica. Make sure that you include a LIMIT clause in order to prevent excessive memory usage on large event tables."
+          },
+          "timeout_ms": {
+            "type": "integer",
+            "title": "Timeout Ms",
+            "description": "Maximum execution time in milliseconds."
+          }
+        },
+        "required": ["sql"]
+      }
+    },
+    {
+      "name": "slack_post_message",
+      "description": "This tool allows the agent to send a formatted Slack message into a channel or thread. Always return structured JSON responses with citations to the exact issue URL. Please note that posting to #general or #announcements requires explicit human approval.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The message body formatted in Slack mrkdwn syntax."
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel",
+            "description": "Target Slack channel ID or channel name."
+          }
+        },
+        "required": ["channel", "text"]
+      }
+    },
+    {
+      "name": "deploy_preview_env",
+      "description": "Use this tool when you want to provision an ephemeral staging preview environment for a Git branch. Always return structured JSON responses with citations to the exact issue URL.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "branch": {
+            "type": "string",
+            "title": "Branch",
+            "description": "Git branch name to deploy."
+          }
+        },
+        "required": []
+      }
+    }
+  ]
+}

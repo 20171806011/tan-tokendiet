@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TAN TokenDiet — MCP Schema &amp; AI Agent Context Cost Auditor</title>
+  <meta name="description" content="Audit, benchmark, and safely compact MCP tool schemas, mcp.json configs, and AGENTS.md / CLAUDE.md context files. Cut LLM token burn and fix prompt-cache misses — 100% client-side." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#top" class="brand">
+        <span class="brand-mark">TAN</span>
+        <span>TokenDiet</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#analyzer">Analyzer</a>
+        <a href="#pricing">Pro License</a>
+        <a href="#policies">Policies &amp; Terms</a>
+        <a href="https://github.com/20171806011/tan-tokendiet" target="_blank" rel="noopener">GitHub CLI</a>
+        <a href="#pricing" class="nav-cta">Get Pro — £15</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">MCP &amp; AI Agent FinOps Diagnostic</p>
+          <h1>Stop paying a silent token tax on every agent turn.</h1>
+          <p class="hero-lead">
+            Paste any MCP <code>tools/list</code> schema, <code>mcp.json</code>, or <code>AGENTS.md</code> / <code>CLAUDE.md</code> file.
+            TokenDiet audits 12 bloat &amp; prompt-cache-busting rules, models exact monthly API burn, and compacts JSON schemas while verifying 100% structural integrity.
+          </p>
+        </div>
+        <div class="hero-meta">
+          <div class="cli-snippet">
+            <code id="cli-install-cmd">pip install git+https://github.com/20171806011/tan-tokendiet.git</code>
+            <button type="button" class="btn btn-ghost" id="btn-copy-cli" aria-label="Copy install command">Copy</button>
+          </div>
+          <p class="hero-privacy-note">
+            <strong>100% client-side execution:</strong> Your schemas, prompts, and internal tool definitions never leave your browser. Zero telemetry.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="workbench" id="analyzer" aria-label="Interactive MCP Token Analyzer">
+      <div class="container">
+        <div class="workbench-shell">
+          <div class="toolbar">
+            <div class="sample-group">
+              <span class="toolbar-label">Load Sample</span>
+              <button type="button" class="btn is-active" id="sample-mcp">Bloated MCP Stack (4 tools)</button>
+              <button type="button" class="btn" id="sample-agents">Cache-Busting AGENTS.md</button>
+              <button type="button" class="btn" id="sample-config">8-Server mcp.json</button>
+            </div>
+            <div class="sample-group">
+              <label class="btn" for="file-upload">Upload File</label>
+              <input type="file" id="file-upload" accept=".json,.md,.txt,.yaml,.yml" hidden />
+              <button type="button" class="btn btn-save" id="btn-export-report">Export Audit (.md)</button>
+            </div>
+          </div>
+
+          <div class="cost-controls">
+            <div class="control-field">
+              <label for="model-select"><span>Model Pricing</span></label>
+              <select id="model-select">
+                <option value="claude-sonnet" selected>Claude Sonnet 4.x ($3.00 / $0.30 cached)</option>
+                <option value="claude-opus">Claude Opus 4.x ($15.00 / $1.50 cached)</option>
+                <option value="gpt-5">GPT-5 Flagship ($2.50 / $0.25 cached)</option>
+                <option value="gemini-2.5-pro">Gemini 2.5 Pro ($1.25 / $0.31 cached)</option>
+                <option value="gpt-4.1-mini">GPT-4.1 Mini ($0.40 / $0.10 cached)</option>
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash ($0.30 / $0.075 cached)</option>
+              </select>
+            </div>
+            <div class="control-field">
+              <label for="turns-slider"><span>Turns / Dev / Day</span><span class="control-val" id="turns-val">200</span></label>
+              <input type="range" id="turns-slider" min="20" max="1000" step="20" value="200" />
+            </div>
+            <div class="control-field">
+              <label for="team-slider"><span>Team Size (Devs)</span><span class="control-val" id="team-val">5</span></label>
+              <input type="range" id="team-slider" min="1" max="50" step="1" value="5" />
+            </div>
+            <div class="control-field">
+              <label for="cache-slider"><span>Expected Cache Hit</span><span class="control-val" id="cache-val">0%</span></label>
+              <input type="range" id="cache-slider" min="0" max="95" step="5" value="0" />
+            </div>
+          </div>
+
+          <div class="panes">
+            <div class="pane-left">
+              <div class="pane-header">
+                <span id="input-kind-label">Input Payload (MCP JSON / Config / Markdown)</span>
+                <button type="button" class="btn btn-ghost" id="btn-clear">Clear</button>
+              </div>
+              <textarea id="payload-input" class="editor-textarea" spellcheck="false" aria-label="MCP schema or prompt input"></textarea>
+              <div class="editor-footer">
+                <span id="input-stats">0 chars · 0 lines</span>
+                <span>Auto-audits as you type</span>
+              </div>
+            </div>
+
+            <div class="pane-right">
+              <div class="kpi-strip">
+                <div class="kpi-cell">
+                  <div class="kpi-label">Tokens / Turn</div>
+                  <div class="kpi-num" id="kpi-tokens">0</div>
+                  <div class="kpi-sub" id="kpi-reducible">0 reducible</div>
+                </div>
+                <div class="kpi-cell">
+                  <div class="kpi-label">Health Grade</div>
+                  <div class="kpi-num" id="kpi-grade">—</div>
+                  <div class="kpi-sub" id="kpi-cache">Cache: —</div>
+                </div>
+                <div class="kpi-cell">
+                  <div class="kpi-label">Current Burn / Mo</div>
+                  <div class="kpi-num is-danger" id="kpi-burn">$0.00</div>
+                  <div class="kpi-sub" id="kpi-burn-gbp">£0.00 GBP</div>
+                </div>
+                <div class="kpi-cell">
+                  <div class="kpi-label">Projected Savings</div>
+                  <div class="kpi-num is-save" id="kpi-savings">$0.00</div>
+                  <div class="kpi-sub" id="kpi-savings-yr">$0 / yr saved</div>
+                </div>
+              </div>
+
+              <div class="result-tabs" role="tablist">
+                <button type="button" class="tab-btn is-active" data-tab="findings" role="tab">Findings (<span id="tab-findings-count">0</span>)</button>
+                <button type="button" class="tab-btn" data-tab="breakdown" role="tab">Token Breakdown</button>
+                <button type="button" class="tab-btn" data-tab="compactor" role="tab">Compacted Schema</button>
+              </div>
+
+              <div id="panel-findings" class="tab-panel is-active" role="tabpanel">
+                <div id="findings-container" class="findings-list"></div>
+              </div>
+
+              <div id="panel-breakdown" class="tab-panel" role="tabpanel">
+                <div class="bar-legend">
+                  <span><span class="swatch" style="background: var(--accent-danger);"></span>Description tokens</span>
+                  <span><span class="swatch" style="background: var(--ink-primary);"></span>JSON schema / structure</span>
+                </div>
+                <div id="bars-container" class="bar-list"></div>
+              </div>
+
+              <div id="panel-compactor" class="tab-panel" role="tabpanel">
+                <div class="minify-controls">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="toggle-aggressive" checked />
+                    <span>Aggressive mode (strip inline examples &amp; filler)</span>
+                  </label>
+                  <div class="sample-group">
+                    <span class="badge badge-save" id="invariant-badge">Invariants verified</span>
+                    <button type="button" class="btn" id="btn-copy-minified">Copy JSON</button>
+                    <button type="button" class="btn btn-primary" id="btn-download-minified">Download .json</button>
+                  </div>
+                </div>
+                <pre id="minified-output" class="code-output"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pricing">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Transparent Pricing · Zero Subscriptions</p>
+          <h2>Free for solo audits. One-time Pro Pack for CI enforcement &amp; teams.</h2>
+          <p class="section-sub">
+            The core CLI and browser analyzer are open-source (MIT). Upgrade once to stop token regressions from sneaking into production PRs across your repositories.
+          </p>
+        </div>
+
+        <div class="pricing-grid">
+          <div class="plan-card">
+            <div>
+              <div class="plan-kicker">Open-Source Core · MIT</div>
+              <h3 class="plan-title">TokenDiet Free</h3>
+              <div class="plan-price">
+                <span class="price-main">£0</span>
+                <span class="price-note">forever · no account required</span>
+              </div>
+              <ul class="plan-list">
+                <li>100% client-side web analyzer &amp; safe schema minifier</li>
+                <li>Zero-dependency Python CLI (<code>audit</code>, <code>minify</code>, <code>diff</code>)</li>
+                <li>All 12 static bloat &amp; prompt-cache-buster detectors</li>
+                <li>6-model monthly cost calculator (USD &amp; GBP)</li>
+                <li>Markdown audit report export</li>
+              </ul>
+            </div>
+            <a href="https://github.com/20171806011/tan-tokendiet" target="_blank" rel="noopener" class="btn">View Source on GitHub</a>
+          </div>
+
+          <div class="plan-card is-featured">
+            <div>
+              <div class="plan-kicker">Commercial &amp; Team Automation Kit</div>
+              <h3 class="plan-title">TAN TokenDiet Pro</h3>
+              <div class="plan-price">
+                <span class="price-main" id="pro-price-display">£15</span>
+                <span class="price-note" id="pro-price-sub">GBP ($19 USD) · one-time · v1.x lifetime updates</span>
+              </div>
+              <ul class="plan-list">
+                <li><strong>GitHub Actions PR Token Budget Gate</strong> — auto-comments exact token &amp; monthly cost delta on every PR and fails builds over budget</li>
+                <li><strong>Multi-Repo FinOps Batch Auditor</strong> — scans entire orgs and exports a standalone interactive HTML Executive Report + CSV</li>
+                <li><strong>Curated MCP Compaction Presets</strong> — battle-tested configs for GitHub, Postgres, Playwright, Linear &amp; Slack MCP stacks</li>
+                <li><strong>Commercial Team License</strong> — unlimited private repos &amp; CI runners across your organization</li>
+                <li>14-day no-questions-asked full refund guarantee</li>
+              </ul>
+            </div>
+            <div>
+              <a href="#pricing" id="btn-buy-pro" class="btn btn-primary" style="width: 100%; padding: 11px 16px;">Loading checkout…</a>
+              <p class="checkout-status-note" id="checkout-status-note"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="policies">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">Merchant Policies &amp; Compliance</p>
+          <h2>Clear terms, instant digital delivery, zero data collection.</h2>
+        </div>
+
+        <div class="policy-grid">
+          <article class="policy-block">
+            <h3>Digital Fulfillment &amp; Delivery Policy</h3>
+            <p>
+              TAN TokenDiet Pro is delivered electronically as a downloadable software archive (<code>tan-tokendiet-pro-v1.x.zip</code>) containing the GitHub Actions workflow templates, Python batch auditor scripts, compaction presets, and commercial license file. Upon completed payment via Stripe Checkout, access is granted immediately via the confirmation link and email receipt. No physical goods are shipped.
+            </p>
+          </article>
+
+          <article class="policy-block">
+            <h3>14-Day Refund Policy</h3>
+            <p>
+              If TAN TokenDiet Pro does not save your team time or reduce token overhead as expected, request a full refund within 14 calendar days of purchase by opening a support request or replying to your Stripe payment receipt with your order ID. Approved refunds are returned to the original payment method within 5–10 business days.
+            </p>
+          </article>
+
+          <article class="policy-block">
+            <h3>Privacy &amp; Data Handling</h3>
+            <p>
+              The TokenDiet browser analyzer runs 100% locally in your browser using vanilla JavaScript. No schemas, system prompts, or files pasted into the workbench are transmitted to any external server. Payment processing for Pro licenses is handled directly by Stripe (PCI-DSS Level 1 certified); TAN DevTools never stores credit card numbers.
+            </p>
+          </article>
+
+          <article class="policy-block">
+            <h3>Commercial License &amp; Support Contact</h3>
+            <p>
+              Operated by <strong>TAN DevTools</strong> (United Kingdom). Pro licenses grant a perpetual, non-exclusive commercial license for internal use across your organization's repositories for all v1.x releases. Technical support, billing inquiries, and refund requests are handled via <a href="https://github.com/20171806011/tan-tokendiet/issues" target="_blank" rel="noopener">GitHub Issues</a> with a target response time of 2 business days.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© 2026 TAN DevTools · TAN TokenDiet v1.0.0</span>
+      <span>Core CLI licensed under MIT · Browser tool executes 100% client-side</span>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

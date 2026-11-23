@@ -1,0 +1,14 @@
+{
+  "merchant": "TAN DevTools",
+  "product_name": "TAN TokenDiet Pro — Commercial & CI License (v1.x)",
+  "price_gbp": 15,
+  "price_usd": 19,
+  "billing_type": "one_time",
+  "status": "awaiting_stripe_activation",
+  "checkout_provider": "stripe_payment_link",
+  "checkout_url": "",
+  "polar_fallback_url": "",
+  "preorder_url": "https://github.com/20171806011/tan-tokendiet/issues/new?title=Pro+License+Request+(TAN+TokenDiet+Pro)&body=Hi+TAN+DevTools%2C%0A%0AI+would+like+to+purchase+a+TAN+TokenDiet+Pro+license+(%C2%A315+%2F+%2419+one-time).%0A%0ATeam+size%3A+%0APreferred+currency+(GBP%2FUSD)%3A+GBP%0A%0APlease+reply+once+the+Stripe+checkout+link+is+live!",
+  "support_url": "https://github.com/20171806011/tan-tokendiet/issues",
+  "activation_instructions": "Paste your live Stripe Payment Link (https://buy.stripe.com/...) into checkout_url and change status to 'live'."
+}
